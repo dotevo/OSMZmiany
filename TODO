@@ -1,0 +1,8 @@
+-Select BOX on JMapViewer
+-Load diff file from URL or HDD
+-Show username, changeset etc (over point)
+-Draw ways (if nodes in memory)
+-Statictics (changeset/user/nodes[Added,Removed,Changed])
+
+
+
