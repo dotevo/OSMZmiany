@@ -63,8 +63,8 @@ public class DataContainer extends DefaultHandler{
 	
 	HashMap<Long,Integer> changesetsIndex=new HashMap<Long,Integer>();
 	Vector <Changeset> changesets=new Vector <Changeset>();
-	
-	
+
+	private ArrayList<DataContainerListener> datacontainerListener=new ArrayList<DataContainerListener>();
 	
 	
 	
@@ -93,6 +93,8 @@ public class DataContainer extends DefaultHandler{
 			e.printStackTrace();
 			System.exit(10);
 		}
+		for(int j=0;j<datacontainerListener.size();j++)
+			datacontainerListener.get(j).dataChanged();
 	}
 	
 	public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
@@ -202,5 +204,11 @@ public class DataContainer extends DefaultHandler{
 		this.ways.clear();
 		this.users.clear();
 		this.changesetsIndex.clear();
+		for(int j=0;j<datacontainerListener.size();j++)
+			datacontainerListener.get(j).dataChanged();
+	}
+	
+	public void addDataContainerListener(DataContainerListener dcl){
+		datacontainerListener.add(dcl);
 	}
 }

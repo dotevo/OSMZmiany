@@ -48,33 +48,28 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 
-public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseListener, OverlayPainter {
+public class OSMZmiany extends JFrame {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -2976479683829295126L;
-	private JMapViewer map;
+	private static final long serialVersionUID = -2976479683829295126L;	
+	
 	public static OSMZmiany instance;
+	
 	private Timer refetchTimer;
-	
-	public DataContainer dc;
-	private Image overlayI;
-	
-	
-	JList list;
-	private DefaultListModel model = new DefaultListModel();
-
-	
 	private int seqNum;
+		
+	public DataContainer dc;
 	
-	//box selection:
-	private boolean setMapsBounds=false;
-	private Coordinate c1;
-	private Coordinate c2;
+	
+	//Widgets
+	private ZMapWidget map;
 	private JTextField textField;
 	private JCheckBox chckbxAutoDiffDownload;
-	
+	private JList list;
+	private DefaultListModel model = new DefaultListModel();
+
 
 	public OSMZmiany() {
 		dc=new DataContainer();
@@ -96,14 +91,10 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		this.setSize(800, 800);
 		
 		//MAP
-		map = new JMapViewer();
-		map.addChangeListener(this);
-		map.addOverlayPainter(this);
-		map.addMouseListener(this);
-		map.setSize(800, 800);		
+		map = new ZMapWidget(dc);
+		map.setSize(400, 400);		
 				
-		DefaultMapController mapController = new DefaultMapController(map);		
-		mapController.setMovementMouseButton(MouseEvent.BUTTON2);		
+				
 		splitPane.setLeftComponent(map);
 		
 		JPanel panel = new JPanel();
@@ -118,19 +109,17 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		final JButton btnUstawBox = new JButton("Set Box");
 		btnUstawBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				setMapsBounds=true;
+				map.setBBox();
 			}
 		});
 		
 		JButton btnRemoveBox = new JButton("Remove Box");
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				dc.setNewDataFilter(null);
-				c1=null;
-				c2=null;
-				makeOverlay();
+				map.removeBBox();
 			}
 		});
+		
 		panel_1.setLayout(new MigLayout("", "[96px][118px,grow][87px]", "[24px][][][][][]"));
 		
 		JLabel lblSetBoundary = new JLabel("Set boundary:");
@@ -160,13 +149,15 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		chckbxAutoDiffDownload = new JCheckBox("Auto diff download");
 		panel_1.add(chckbxAutoDiffDownload, "cell 1 3");
 		
+		
 		JButton btnNewButton = new JButton("Clear");
 		btnNewButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dc.clear();	
-				makeOverlay();
 			}
 		});
+		
+		
 		panel_1.add(btnNewButton, "cell 2 4");
 		panel.add(tabbedPane);
 		
@@ -181,7 +172,6 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		panel_2.add(list);
 		setVisible(true);
 
-		overlayI = new BufferedImage(map.getWidth(), map.getHeight(),BufferedImage.TYPE_INT_ARGB);
 
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
@@ -232,12 +222,8 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	public void getData(String url){
 		try {
 			BufferedInputStream bis = new BufferedInputStream(
-					new GZIPInputStream(new URL(url).openStream()));
-		
-			dc.addData(bis);
-			System.out.println("->"+dc.nodes.size());
-			makeOverlay();
-			reloadChangesets();			
+					new GZIPInputStream(new URL(url).openStream()));		
+			dc.addData(bis);			
 		} catch (IOException ioe) {
 			if (ioe instanceof FileNotFoundException) {
 			} else {
@@ -247,13 +233,6 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	}
 
 
-
-	public void mapViewChanged() {
-		makeOverlay();
-		repaint();
-	}
-	 
-	
 	public void reloadChangesets(){
 		model.clear();
 		Iterator<Changeset> iterator = dc.changesets.iterator();
@@ -262,114 +241,7 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	    	model.add(0, ch.id+":"+dc.users.get(ch.userId).name);  	
 	    }
 	}
-	
-	
-
-	public void mouseClicked(MouseEvent me) {
-		Iterator<Long> iterator = dc.nodes.keySet().iterator();
-	    while (iterator.hasNext()) {
-	    	Node node=dc.nodes.get(iterator.next());	    	
-	    	Point p = map.getMapPosition(node.lat,node.lon);
-	    	if(p!=null){	    		
-	    		if(p.x<me.getX()+2&&p.x>me.getX()-2&&
-	    		   p.y<me.getY()+2&&p.y>me.getY()-2){
-	    			//YEAH!!! Killed
-	    			openURL("http://www.openstreetmap.org/browse/changeset/"+node.changesetId);
-	    			System.out.println(node.changesetId);
-	    			return;	    			
-	    		}
-	    	}
-	    }
-	}
-
-	public void mouseEntered(MouseEvent arg0) {		
-	}
-
-	public void mouseExited(MouseEvent arg0) {		
-	}
-
-	public void mousePressed(MouseEvent arg0) {
-		if(setMapsBounds&&arg0.getButton()==1)
-			c1=map.getPosition(arg0.getX(), arg0.getY());		
-	}
-
-	public void mouseReleased(MouseEvent arg0) {
-		if(setMapsBounds&&arg0.getButton()==1){
-			c2=map.getPosition(arg0.getX(), arg0.getY());
-			
-			//Corners
-			Point p = map.getMapPosition(c1.getLat(),c1.getLon());
-	    	Point p2 = map.getMapPosition(c2.getLat(),c2.getLon());
-	    	if(p2.x<p.x&&p2.y<p.y){
-	    		Coordinate c3=c1;
-	    		c1=c2;
-	    		c2=c3;	    		
-	    	}else if(p2.x>p.x&&p2.y<p.y){
-	    		Coordinate c1A=c1;
-	    		Coordinate c2A=c2;	    		
-	    		c1=new Coordinate(c2A.getLat(),c1A.getLon());
-	    		c2=new Coordinate(c1A.getLat(),c2A.getLon());
-	    	}else if(p2.x<p.x&&p2.y>p.y){
-	    		Coordinate c1A=c1;
-	    		Coordinate c2A=c2;	    		
-	    		c1=new Coordinate(c1A.getLat(),c2A.getLon());
-	    		c2=new Coordinate(c2A.getLat(),c1A.getLon());
-	    	}
-			
-			MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
-			dc.setNewDataFilter(mf);
-			dc.removeData(mf);
-			setMapsBounds=false;
-			makeOverlay();			
-		}
-	}
-	
-	
-		
-	public void makeOverlay(){
-		overlayI = new BufferedImage(getWidth(), getHeight(),BufferedImage.TYPE_INT_ARGB);
-		Graphics g = overlayI.getGraphics();
-		g.setColor(Color.BLACK);
-		
-		Iterator<Long> iterator = dc.nodes.keySet().iterator();
-	    while (iterator.hasNext()) {
-	    	Node node=dc.nodes.get(iterator.next());
-	    	switch(node.mode){
-	    		case 0: {
-	    			g.setColor(Color.BLUE);
-	    			break;
-				}
-	    		case 1: {
-	    			g.setColor(Color.GREEN);
-	    			break;
-				}
-	    		case 2: {
-	    			g.setColor(Color.RED);
-	    			break;
-				}
-	    	}
-	    	Point p = map.getMapPosition(node.lat,node.lon);
-	    	if(p!=null)
-	    		g.drawRect(p.x - 2, p.y - 2, 3, 3);
-	    }
-	    if(c1!=null&&c2!=null){	    	
-	    	Point p = map.getMapPosition(c1.getLat(),c1.getLon());
-	    	Point p2 = map.getMapPosition(c2.getLat(),c2.getLon());
-	    	if(p!=null&&p2!=null){
-	    		g.setColor(Color.orange);
-    			g.drawRect(p.x, p.y,p2.x-p.x, p2.y-p.y);
-	    	}
-	    }
-	    repaint();
-	}
-	
-	
-	public void paintOverlay(Graphics g) {
-		if (overlayI != null) {
-			g.drawImage(overlayI, 0, 0, null);
-		}
-	}
-	
+				
 	public static void openURL(String url) {
 		if( !java.awt.Desktop.isDesktopSupported() ) {
             System.err.println( "Desktop is not supported (fatal)" );
