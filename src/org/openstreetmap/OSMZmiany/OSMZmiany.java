@@ -179,8 +179,10 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 					new GZIPInputStream(new URL(url).openStream()));
 			
 			dc.addData(bis);
+			System.out.println("->"+dc.nodes.size());
 			makeOverlay();
 			reloadChangesets();
+			seqNum++;
 		} catch (IOException ioe) {
 			if (ioe instanceof FileNotFoundException) {
 
