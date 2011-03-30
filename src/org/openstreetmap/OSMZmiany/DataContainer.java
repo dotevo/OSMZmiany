@@ -194,4 +194,13 @@ public class DataContainer extends DefaultHandler{
 		
 		//TODO changesets, ways
 	}
+
+
+	public void clear() {
+		this.changesets.clear();
+		this.nodes.clear();
+		this.ways.clear();
+		this.users.clear();
+		this.changesetsIndex.clear();
+	}
 }

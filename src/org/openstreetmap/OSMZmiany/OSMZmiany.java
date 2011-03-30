@@ -43,9 +43,10 @@ import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
-import com.jgoodies.forms.layout.FormLayout;
-import com.jgoodies.forms.layout.ColumnSpec;
-import com.jgoodies.forms.layout.RowSpec;
+import javax.swing.JLabel;
+import net.miginfocom.swing.MigLayout;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
 
 public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseListener, OverlayPainter {
 
@@ -71,6 +72,8 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	private boolean setMapsBounds=false;
 	private Coordinate c1;
 	private Coordinate c2;
+	private JTextField textField;
+	private JCheckBox chckbxAutoDiffDownload;
 	
 
 	public OSMZmiany() {
@@ -110,7 +113,7 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		JPanel panel_1 = new JPanel();
-		tabbedPane.addTab("Options", null, panel_1, null);
+		tabbedPane.addTab("General", null, panel_1, null);
 		
 		final JButton btnUstawBox = new JButton("Set Box");
 		btnUstawBox.addActionListener(new ActionListener() {
@@ -128,25 +131,54 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 				makeOverlay();
 			}
 		});
-		panel_1.add(btnRemoveBox);
+		panel_1.setLayout(new MigLayout("", "[96px][118px,grow][87px]", "[24px][][][][][]"));
 		
-		panel_1.add(btnUstawBox);
+		JLabel lblSetBoundary = new JLabel("Set boundary:");
+		panel_1.add(lblSetBoundary, "cell 0 0,alignx left,aligny center");
+		panel_1.add(btnRemoveBox, "cell 1 0,alignx left,aligny top");
+		
+		panel_1.add(btnUstawBox, "cell 2 0,alignx left,aligny top");
+		
+		JLabel lblData = new JLabel("Data:");
+		panel_1.add(lblData, "cell 0 1");
+		
+		JLabel lblDiffUrl = new JLabel("Diff URL");
+		panel_1.add(lblDiffUrl, "cell 0 2,alignx trailing");
+		
+		textField = new JTextField();
+		panel_1.add(textField, "cell 1 2,growx");
+		textField.setColumns(10);
+		
+		JButton btnLoad = new JButton("Load");
+		btnLoad.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				getData(textField.getText());
+			}
+		});
+		panel_1.add(btnLoad, "cell 2 2");
+		
+		chckbxAutoDiffDownload = new JCheckBox("Auto diff download");
+		panel_1.add(chckbxAutoDiffDownload, "cell 1 3");
+		
+		JButton btnNewButton = new JButton("Clear");
+		btnNewButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dc.clear();	
+				makeOverlay();
+			}
+		});
+		panel_1.add(btnNewButton, "cell 2 4");
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("Changesets", null, panel_2, null);
-		panel_2.setLayout(new FormLayout(new ColumnSpec[] {
-				ColumnSpec.decode("375px"),},
-			new RowSpec[] {
-				RowSpec.decode("10px"),
-				RowSpec.decode("39px"),
-				RowSpec.decode("717px"),}));
+		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
 		
 		JButton btnShowSite = new JButton("Info");
-		panel_2.add(btnShowSite, "1, 1, 1, 2, center, center");
+		panel_2.add(btnShowSite);
 		
 		list = new JList(model);
-		panel_2.add(list, "1, 3, fill, fill");
+		panel_2.add(list);
 		setVisible(true);
 
 		overlayI = new BufferedImage(map.getWidth(), map.getHeight(),BufferedImage.TYPE_INT_ARGB);
@@ -160,7 +192,8 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		refetchTimer = new Timer();
 		refetchTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
-				getData();
+				if(chckbxAutoDiffDownload.isSelected())
+					getData();
 			}
 		}, 20000, 30000);
 
@@ -184,28 +217,29 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 			ioe.printStackTrace();
 			System.exit(1);
 		}
-		getData();
-
 	}
 
-	public void getData() {
-		try {
+	public void getData() {		
 			DecimalFormat myFormat = new DecimalFormat("000");
 			String url = "http://planet.openstreetmap.org/minute-replicate/"
 					+ myFormat.format(seqNum / 1000000) + "/"
 					+ myFormat.format((seqNum / 1000) % 1000) + "/"
 					+ myFormat.format(seqNum % 1000) + ".osc.gz";
+			getData(url);
+			seqNum++;			
+	}
+	
+	public void getData(String url){
+		try {
 			BufferedInputStream bis = new BufferedInputStream(
 					new GZIPInputStream(new URL(url).openStream()));
-			
+		
 			dc.addData(bis);
 			System.out.println("->"+dc.nodes.size());
 			makeOverlay();
-			reloadChangesets();
-			seqNum++;
+			reloadChangesets();			
 		} catch (IOException ioe) {
 			if (ioe instanceof FileNotFoundException) {
-
 			} else {
 				ioe.printStackTrace();
 			}
