@@ -21,15 +21,12 @@ public class BoundaryMapFilter implements MapFilter{
 		return true;
 	}
 
-	public boolean nodeFilter(Node node) {
-		System.out.println(node.lat+">"+lat1+"&&"+node.lat+"<"+lat2+"&&"+node.lon+">"+lon1+"&&"+node.lon+"<"+lon2);
-		
+	public boolean nodeFilter(Node node) {		
 		if((node.lat>lat2&&node.lat<lat1&&
 			node.lon>lon1&&node.lon<lon2)||
 			(node.lat<lat2&&node.lat>lat1&&
 			node.lon<lon1&&node.lon>lon2))
 		{
-			System.out.println("YEAH");
 			return true;
 		}
 		
