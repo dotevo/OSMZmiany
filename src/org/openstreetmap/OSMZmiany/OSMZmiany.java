@@ -28,6 +28,7 @@ import javax.swing.JFrame;
 
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
+import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
 import org.openstreetmap.gui.jmapviewer.JMapViewer;
 import org.openstreetmap.gui.jmapviewer.interfaces.MapViewChangeListener;
@@ -65,6 +66,12 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 
 	
 	private int seqNum;
+	
+	//box selection:
+	private boolean setMapsBounds=false;
+	private Coordinate c1;
+	private Coordinate c2;
+	
 
 	public OSMZmiany() {
 		dc=new DataContainer();
@@ -93,7 +100,7 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		map.setSize(800, 800);		
 				
 		DefaultMapController mapController = new DefaultMapController(map);		
-		mapController.setMovementMouseButton(MouseEvent.BUTTON1);		
+		mapController.setMovementMouseButton(MouseEvent.BUTTON2);		
 		splitPane.setLeftComponent(map);
 		
 		JPanel panel = new JPanel();
@@ -105,11 +112,24 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("Options", null, panel_1, null);
 		
-		JButton btnUstawBox = new JButton("Set Box");
+		final JButton btnUstawBox = new JButton("Set Box");
 		btnUstawBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				setMapsBounds=true;
 			}
 		});
+		
+		JButton btnRemoveBox = new JButton("Remove Box");
+		btnRemoveBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				dc.setNewDataFilter(null);
+				c1=null;
+				c2=null;
+				makeOverlay();
+			}
+		});
+		panel_1.add(btnRemoveBox);
+		
 		panel_1.add(btnUstawBox);
 		panel.add(tabbedPane);
 		
@@ -235,9 +255,39 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	}
 
 	public void mousePressed(MouseEvent arg0) {
+		if(setMapsBounds&&arg0.getButton()==1)
+			c1=map.getPosition(arg0.getX(), arg0.getY());		
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
+		if(setMapsBounds&&arg0.getButton()==1){
+			c2=map.getPosition(arg0.getX(), arg0.getY());
+			
+			//Corners
+			Point p = map.getMapPosition(c1.getLat(),c1.getLon());
+	    	Point p2 = map.getMapPosition(c2.getLat(),c2.getLon());
+	    	if(p2.x<p.x&&p2.y<p.y){
+	    		Coordinate c3=c1;
+	    		c1=c2;
+	    		c2=c3;	    		
+	    	}else if(p2.x>p.x&&p2.y<p.y){
+	    		Coordinate c1A=c1;
+	    		Coordinate c2A=c2;	    		
+	    		c1=new Coordinate(c2A.getLat(),c1A.getLon());
+	    		c2=new Coordinate(c1A.getLat(),c2A.getLon());
+	    	}else if(p2.x<p.x&&p2.y>p.y){
+	    		Coordinate c1A=c1;
+	    		Coordinate c2A=c2;	    		
+	    		c1=new Coordinate(c1A.getLat(),c2A.getLon());
+	    		c2=new Coordinate(c2A.getLat(),c1A.getLon());
+	    	}
+			
+			MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
+			dc.setNewDataFilter(mf);
+			dc.removeData(mf);
+			setMapsBounds=false;
+			makeOverlay();			
+		}
 	}
 	
 	
@@ -268,6 +318,15 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	    	if(p!=null)
 	    		g.drawRect(p.x - 2, p.y - 2, 3, 3);
 	    }
+	    if(c1!=null&&c2!=null){	    	
+	    	Point p = map.getMapPosition(c1.getLat(),c1.getLon());
+	    	Point p2 = map.getMapPosition(c2.getLat(),c2.getLon());
+	    	if(p!=null&&p2!=null){
+	    		g.setColor(Color.orange);
+    			g.drawRect(p.x, p.y,p2.x-p.x, p2.y-p.y);
+	    	}
+	    }
+	    repaint();
 	}
 	
 	

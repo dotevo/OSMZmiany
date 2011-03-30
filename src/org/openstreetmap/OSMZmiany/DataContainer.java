@@ -21,6 +21,7 @@ public class DataContainer extends DefaultHandler{
 	short mode=0;
 
 	DateParser dp = new DateParser();
+	MapFilter mapfilter=null;
 	
 	class Node{
 		long id;
@@ -102,21 +103,30 @@ public class DataContainer extends DefaultHandler{
 		 } else if (qName.equals("delete")) {
 			 mode = 2;
 		 } else if (qName.equals("node")) {
-			 //USER
-			 long uid = Long.parseLong(atts.getValue("uid"));
-			 String userName = atts.getValue("user");
-			 User user=getUser(uid,userName);
-			 
-			 //CHANGESET
-			 long changesetId = Long.parseLong(atts.getValue("changeset"));
-			 long time = dp.parse(atts.getValue("timestamp")).getTime();
-			 Changeset changeset=getChangeset(changesetId,time,uid);
+			 //TODO It can be faster!
 			 
 			 //NODES 
 			 double lat = Double.parseDouble(atts.getValue("lat"));
 			 double lon = Double.parseDouble(atts.getValue("lon"));
 			 long id = Long.parseLong(atts.getValue("id"));
+			 
+			 //USER
+			 long uid = Long.parseLong(atts.getValue("uid"));
+			 String userName = atts.getValue("user");
+			 
+			 //CHANGESET
+			 long changesetId = Long.parseLong(atts.getValue("changeset"));
+			 long time = dp.parse(atts.getValue("timestamp")).getTime();
+			 
+			 
+			 
 			 Node node=getNode(id,lat,lon,changesetId,mode);
+			 if(mapfilter!=null&&!mapfilter.nodeFilter(node))
+				 nodes.remove(id);
+			 else{			 
+				 Changeset changeset=getChangeset(changesetId,time,uid);
+				 User user=getUser(uid,userName);
+			 }
 		 }
 	}
 
@@ -159,5 +169,29 @@ public class DataContainer extends DefaultHandler{
 			users.put(uid, user);
 		}
 		return user;
+	}
+
+
+	public void setNewDataFilter(MapFilter mf) {
+		mapfilter=mf;
+	}
+
+
+	public void removeData(MapFilter mf) {
+		//Remove data
+		
+		//nodes
+		Iterator<Long> nodeL=nodes.keySet().iterator();
+		Vector <Long> toRemove=new Vector <Long>();
+		while(nodeL.hasNext()){
+			Long t=nodeL.next();
+			if(!mf.nodeFilter(nodes.get(t))){
+				toRemove.add(t);
+			}			
+		}
+		for(int i=0;i<toRemove.size();i++)
+			nodes.remove(toRemove.get(i));
+		
+		//TODO changesets, ways
 	}
 }
