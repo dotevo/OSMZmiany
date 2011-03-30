@@ -15,7 +15,6 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import java.sql.*;
 
 public class DataContainer extends DefaultHandler{
 	short mode=0;
@@ -126,8 +125,8 @@ public class DataContainer extends DefaultHandler{
 			 if(mapfilter!=null&&!mapfilter.nodeFilter(node))
 				 nodes.remove(id);
 			 else{			 
-				 Changeset changeset=getChangeset(changesetId,time,uid);
-				 User user=getUser(uid,userName);
+				 getChangeset(changesetId,time,uid);
+				 getUser(uid,userName);
 			 }
 		 }
 	}

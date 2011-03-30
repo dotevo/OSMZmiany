@@ -1,17 +1,9 @@
 package org.openstreetmap.OSMZmiany;
 
-import java.awt.Color;
-import java.awt.Desktop;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -27,12 +19,6 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.JFrame;
 
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
-import org.openstreetmap.OSMZmiany.DataContainer.Node;
-import org.openstreetmap.gui.jmapviewer.Coordinate;
-import org.openstreetmap.gui.jmapviewer.DefaultMapController;
-import org.openstreetmap.gui.jmapviewer.JMapViewer;
-import org.openstreetmap.gui.jmapviewer.interfaces.MapViewChangeListener;
-import org.openstreetmap.gui.jmapviewer.interfaces.OverlayPainter;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JSplitPane;
@@ -46,8 +32,6 @@ import javax.swing.JList;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
-import java.awt.GridLayout;
-import java.awt.FlowLayout;
 
 public class OSMZmiany extends JFrame {
 
