@@ -44,9 +44,10 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JList;
 import javax.swing.JLabel;
-import net.miginfocom.swing.MigLayout;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import java.awt.GridLayout;
+import java.awt.FlowLayout;
 
 public class OSMZmiany extends JFrame {
 
@@ -65,8 +66,8 @@ public class OSMZmiany extends JFrame {
 	
 	//Widgets
 	private ZMapWidget map;
-	private JTextField textField;
-	private JCheckBox chckbxAutoDiffDownload;
+	private JTextField tfURL;
+	private JCheckBox cbxLiveEdit;
 	private JList list;
 	private DefaultListModel model = new DefaultListModel();
 
@@ -106,69 +107,85 @@ public class OSMZmiany extends JFrame {
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("General", null, panel_1, null);
 		
-		final JButton btnUstawBox = new JButton("Set Box");
-		btnUstawBox.addActionListener(new ActionListener() {
+		final JButton btnSetBox = new JButton("Set Box");
+		btnSetBox.setBounds(94, 41, 129, 24);
+		btnSetBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				map.setBBox();
 			}
 		});
 		
 		JButton btnRemoveBox = new JButton("Remove Box");
+		btnRemoveBox.setBounds(230, 41, 118, 24);
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				map.removeBBox();
 			}
 		});
-		
-		panel_1.setLayout(new MigLayout("", "[96px][118px,grow][87px]", "[24px][][][][][]"));
+		panel_1.setLayout(null);
 		
 		JLabel lblSetBoundary = new JLabel("Set boundary:");
-		panel_1.add(lblSetBoundary, "cell 0 0,alignx left,aligny center");
-		panel_1.add(btnRemoveBox, "cell 1 0,alignx left,aligny top");
+		lblSetBoundary.setBounds(12, 10, 101, 14);
+		panel_1.add(lblSetBoundary);
+		panel_1.add(btnRemoveBox);
 		
-		panel_1.add(btnUstawBox, "cell 2 0,alignx left,aligny top");
+		panel_1.add(btnSetBox);
 		
 		JLabel lblData = new JLabel("Data:");
-		panel_1.add(lblData, "cell 0 1");
+		lblData.setBounds(12, 86, 39, 14);
+		panel_1.add(lblData);
 		
 		JLabel lblDiffUrl = new JLabel("Diff URL");
-		panel_1.add(lblDiffUrl, "cell 0 2,alignx trailing");
+		lblDiffUrl.setBounds(12, 117, 55, 14);
+		panel_1.add(lblDiffUrl);
 		
-		textField = new JTextField();
-		panel_1.add(textField, "cell 1 2,growx");
-		textField.setColumns(10);
+		tfURL = new JTextField();
+		tfURL.setBounds(94, 112, 254, 24);
+		panel_1.add(tfURL);
+		tfURL.setColumns(10);
 		
 		JButton btnLoad = new JButton("Load");
+		btnLoad.setBounds(279, 148, 69, 24);
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				getData(textField.getText());
+				getData(tfURL.getText());
 			}
 		});
-		panel_1.add(btnLoad, "cell 2 2");
+		panel_1.add(btnLoad);
 		
-		chckbxAutoDiffDownload = new JCheckBox("Auto diff download");
-		panel_1.add(chckbxAutoDiffDownload, "cell 1 3");
+		cbxLiveEdit = new JCheckBox("Live edit diff");
+		cbxLiveEdit.setBounds(94, 184, 159, 22);
+		cbxLiveEdit.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				getData();	
+			}
+		});
+		
+		panel_1.add(cbxLiveEdit);
 		
 		
-		JButton btnNewButton = new JButton("Clear");
-		btnNewButton.addActionListener(new ActionListener() {
+		JButton btnClear = new JButton("Clear");
+		btnClear.setBounds(277, 184, 71, 24);
+		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dc.clear();	
 			}
 		});
 		
 		
-		panel_1.add(btnNewButton, "cell 2 4");
+		panel_1.add(btnClear);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
 		tabbedPane.addTab("Changesets", null, panel_2, null);
-		panel_2.setLayout(new BoxLayout(panel_2, BoxLayout.X_AXIS));
+		panel_2.setLayout(null);
 		
 		JButton btnShowSite = new JButton("Info");
+		btnShowSite.setBounds(154, 5, 61, 24);
 		panel_2.add(btnShowSite);
 		
 		list = new JList(model);
+		list.setBounds(12, 703, 351, -655);
 		panel_2.add(list);
 		setVisible(true);
 
@@ -182,7 +199,7 @@ public class OSMZmiany extends JFrame {
 		refetchTimer = new Timer();
 		refetchTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
-				if(chckbxAutoDiffDownload.isSelected())
+				if(cbxLiveEdit.isSelected())
 					getData();
 			}
 		}, 20000, 30000);
@@ -223,7 +240,7 @@ public class OSMZmiany extends JFrame {
 		try {
 			BufferedInputStream bis = new BufferedInputStream(
 					new GZIPInputStream(new URL(url).openStream()));		
-			dc.addData(bis);			
+			dc.addData(bis);		
 		} catch (IOException ioe) {
 			if (ioe instanceof FileNotFoundException) {
 			} else {

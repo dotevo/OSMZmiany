@@ -29,6 +29,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	public ZMapWidget(DataContainer dc){
 		super();
 		this.dc=dc;
+		dc.addDataContainerListener(this);
 		addChangeListener(this);
 		addOverlayPainter(this);
 		addMouseListener(this);
