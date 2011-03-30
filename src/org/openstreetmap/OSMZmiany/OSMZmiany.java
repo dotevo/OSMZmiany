@@ -202,11 +202,10 @@ public class OSMZmiany extends JFrame implements MapViewChangeListener, MouseLis
 	
 	public void reloadChangesets(){
 		model.clear();
-		Iterator<Long> iterator = dc.changesets.keySet().iterator();
+		Iterator<Changeset> iterator = dc.changesets.iterator();
 	    while (iterator.hasNext()) {
-	    	Long id=iterator.next();
-	    	Changeset ch=dc.changesets.get(id);
-	    	model.add(0, id+":"+dc.users.get(ch.userId).name);  	
+	    	Changeset ch=iterator.next();
+	    	model.add(0, ch.id+":"+dc.users.get(ch.userId).name);  	
 	    }
 	}
 	

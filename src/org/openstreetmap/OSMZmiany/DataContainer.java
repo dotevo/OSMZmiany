@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Vector;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -57,7 +59,9 @@ public class DataContainer extends DefaultHandler{
 	HashMap<Long,Node> nodes=new HashMap<Long,Node>();
 	HashMap<Long,Way> ways=new HashMap<Long,Way>();
 	HashMap<Long,User> users=new HashMap<Long,User>();
-	HashMap<Long,Changeset> changesets=new HashMap<Long,Changeset>();
+	
+	HashMap<Long,Integer> changesetsIndex=new HashMap<Long,Integer>();
+	Vector <Changeset> changesets=new Vector <Changeset>();
 	
 	
 	
@@ -134,14 +138,17 @@ public class DataContainer extends DefaultHandler{
 
 
 	private Changeset getChangeset(long changesetId, long time, long user) {
-		Changeset changeset=changesets.get(changesetId);
-		if(changeset==null){
-			changeset=new Changeset(changesetId,time,user);
-			changesets.put(changesetId, changeset);
+		Integer changesetI=changesetsIndex.get(changesetId);
+		Changeset chs=null;
+		if(changesetI==null){
+			chs=new Changeset(changesetId,time,user);
+			changesets.add(chs);
+			changesetsIndex.put(changesetId, changesets.size()-1);
 		}else{
-			changeset.time=time;
+			chs=changesets.get(changesetI);
+			chs.time=time;
 		}
-		return changeset;
+		return chs;
 	}
 
 
