@@ -183,10 +183,12 @@ public class OSMZmiany extends JFrame {
 		refetchTimer = new Timer();
 		refetchTimer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
-				if(cbxLiveEdit.isSelected())
+				if(cbxLiveEdit.isSelected()){
+					initChangeStream();
 					getData();
+				}
 			}
-		}, 20000, 30000);
+		}, 20000, 30000);		
 
 	}
 
@@ -215,7 +217,7 @@ public class OSMZmiany extends JFrame {
 			String url = "http://planet.openstreetmap.org/minute-replicate/"
 					+ myFormat.format(seqNum / 1000000) + "/"
 					+ myFormat.format((seqNum / 1000) % 1000) + "/"
-					+ myFormat.format(seqNum % 1000) + ".osc.gz";
+					+ myFormat.format(seqNum % 1000) + ".osc.gz";			
 			getData(url);
 			seqNum++;			
 	}
@@ -223,7 +225,8 @@ public class OSMZmiany extends JFrame {
 	public void getData(String url){
 		try {
 			BufferedInputStream bis = new BufferedInputStream(
-					new GZIPInputStream(new URL(url).openStream()));		
+					new GZIPInputStream(new URL(url).openStream()));
+			System.out.println("Download: "+url);
 			dc.addData(bis);		
 		} catch (IOException ioe) {
 			if (ioe instanceof FileNotFoundException) {
