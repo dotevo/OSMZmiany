@@ -7,6 +7,7 @@ import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
@@ -25,6 +26,9 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	private Coordinate c1;
 	private Coordinate c2;
 	private DataContainer dc;
+	private DrawStyle drawStyle;
+	
+	private ArrayList<ZMapWidgetListener> zMapWidgetListeners=new ArrayList<ZMapWidgetListener>();
 	
 	public ZMapWidget(DataContainer dc){
 		super();
@@ -52,9 +56,10 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    	if(p!=null){	    		
 	    		if(p.x<arg0.getX()+2&&p.x>arg0.getX()-2&&
 	    		   p.y<arg0.getY()+2&&p.y>arg0.getY()-2){
-	    			//YEAH!!! Killed
-	    			OSMZmiany.openURL("http://www.openstreetmap.org/browse/changeset/"+node.changesetId);
-	    			System.out.println(node.changesetId);
+	    			for(int i=0;i<zMapWidgetListeners.size();i++){
+	    				zMapWidgetListeners.get(i).nodeClicked(node);
+	    			}
+	    			
 	    			return;	    			
 	    		}
 	    	}
@@ -117,27 +122,15 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 		Graphics g = overlayI.getGraphics();
 		g.setColor(Color.BLACK);
 		
-		Iterator<Long> iterator = dc.nodes.keySet().iterator();
-	    while (iterator.hasNext()) {
-	    	Node node=dc.nodes.get(iterator.next());
-	    	switch(node.mode){
-	    		case 0: {
-	    			g.setColor(Color.BLUE);
-	    			break;
-				}
-	    		case 1: {
-	    			g.setColor(Color.GREEN);
-	    			break;
-				}
-	    		case 2: {
-	    			g.setColor(Color.RED);
-	    			break;
-				}
+		if(drawStyle!=null){
+			Iterator<Long> iterator = dc.nodes.keySet().iterator();
+	    	while (iterator.hasNext()) {
+	    		Node node=dc.nodes.get(iterator.next());
+	    		drawStyle.drawNode(g, node);	    	
 	    	}
-	    	Point p = getMapPosition(node.lat,node.lon);
-	    	if(p!=null)
-	    		g.drawRect(p.x - 2, p.y - 2, 3, 3);
-	    }
+		}
+	    
+	    
 	    if(c1!=null&&c2!=null){	    	
 	    	Point p = getMapPosition(c1.getLat(),c1.getLon());
 	    	Point p2 = getMapPosition(c2.getLat(),c2.getLon());
@@ -162,6 +155,14 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 
 	public void dataChanged() {
 		refrashOverlay();		
+	}
+	
+	public void setDrawStyle(DrawStyle ds){
+		drawStyle=ds;
+	}
+	
+	public void addZMapWidgetListener(ZMapWidgetListener z){
+		zMapWidgetListeners.add(z);
 	}
 
 

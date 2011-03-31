@@ -19,6 +19,7 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.JFrame;
 
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
+import org.openstreetmap.OSMZmiany.DataContainer.Node;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JSplitPane;
@@ -32,8 +33,9 @@ import javax.swing.JList;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
+import java.awt.Color;
 
-public class OSMZmiany extends JFrame {
+public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 
 	/**
 	 * 
@@ -46,7 +48,7 @@ public class OSMZmiany extends JFrame {
 	private int seqNum;
 		
 	public DataContainer dc;
-	
+	private SelectedDrawStyle sDS;
 	
 	//Widgets
 	private ZMapWidget map;
@@ -54,7 +56,11 @@ public class OSMZmiany extends JFrame {
 	private JCheckBox cbxLiveEdit;
 	private JList list;
 	private DefaultListModel model = new DefaultListModel();
-
+	
+	
+	private JButton btUser;
+	private JButton btChangeset;
+	private JButton btNode;
 
 	public OSMZmiany() {
 		dc=new DataContainer();
@@ -77,7 +83,10 @@ public class OSMZmiany extends JFrame {
 		
 		//MAP
 		map = new ZMapWidget(dc);
-		map.setSize(400, 400);		
+		map.setSize(400, 400);
+		sDS=new SelectedDrawStyle(map);
+		map.setDrawStyle(sDS);
+		map.addZMapWidgetListener(this);
 				
 				
 		splitPane.setLeftComponent(map);
@@ -171,6 +180,67 @@ public class OSMZmiany extends JFrame {
 		list = new JList(model);
 		list.setBounds(12, 703, 351, -655);
 		panel_2.add(list);
+		
+		JPanel panel_3 = new JPanel();
+		tabbedPane.addTab("Info", null, panel_3, null);
+		panel_3.setLayout(null);
+		
+		JLabel lblNode = new JLabel("Node");
+		lblNode.setBounds(12, 12, 70, 14);
+		panel_3.add(lblNode);
+		
+		JLabel lblChangeset = new JLabel("Changeset");
+		lblChangeset.setBounds(12, 38, 90, 14);
+		panel_3.add(lblChangeset);
+		
+		JLabel lblUser = new JLabel("User");
+		lblUser.setBounds(12, 64, 70, 14);
+		panel_3.add(lblUser);
+		
+		btChangeset = new JButton("#ID");
+		btChangeset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(!btChangeset.getText().equals("#ID"))
+					OSMZmiany.openURL("http://www.openstreetmap.org/browse/changeset/"+btChangeset.getText());	
+			}
+		});
+		btChangeset.setForeground(Color.BLUE);
+		btChangeset.setBounds(109, 38, 120, 14);
+		panel_3.add(btChangeset);
+		
+		btNode = new JButton("#ID");
+		btNode.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(!btNode.getText().equals("#ID"))
+					OSMZmiany.openURL("http://www.openstreetmap.org/browse/node/"+btNode.getText());
+			}
+		});
+		btNode.setForeground(Color.BLUE);
+		btNode.setBounds(109, 12, 120, 14);
+		panel_3.add(btNode);
+		
+		btUser = new JButton("#ID");
+		btUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(!btUser.getText().equals("#ID"))
+					OSMZmiany.openURL("http://www.openstreetmap.org/user/"+btUser.getText());
+			}
+		});
+		btUser.setForeground(Color.BLUE);
+		btUser.setBounds(109, 64, 120, 14);
+		panel_3.add(btUser);
+		
+		JButton btSelectChangeset = new JButton("Select changeset");
+		btSelectChangeset.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Node n=sDS.getSelectedNode();
+				if(n!=null){
+					sDS.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
+				}
+			}
+		});
+		btSelectChangeset.setBounds(12, 90, 216, 24);
+		panel_3.add(btSelectChangeset);
 		setVisible(true);
 
 
@@ -267,5 +337,12 @@ public class OSMZmiany extends JFrame {
 		instance = new OSMZmiany();
 		instance.initChangeStream();
 		instance.setVisible(true);
+	}
+
+	public void nodeClicked(Node node) {
+		btNode.setText(Long.toString(node.id));
+		btChangeset.setText(Long.toString(node.changesetId));
+		btUser.setText(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(node.changesetId)).userId).name);
+		sDS.setSelection(node);		
 	}
 }
