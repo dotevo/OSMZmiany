@@ -54,8 +54,8 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    	Node node=dc.nodes.get(iterator.next());	    	
 	    	Point p = getMapPosition(node.lat,node.lon);
 	    	if(p!=null){	    		
-	    		if(p.x<arg0.getX()+2&&p.x>arg0.getX()-2&&
-	    		   p.y<arg0.getY()+2&&p.y>arg0.getY()-2){
+	    		if(p.x<arg0.getX()+3&&p.x>arg0.getX()-3&&
+	    		   p.y<arg0.getY()+3&&p.y>arg0.getY()-3){
 	    			for(int i=0;i<zMapWidgetListeners.size();i++){
 	    				zMapWidgetListeners.get(i).nodeClicked(node);
 	    			}
