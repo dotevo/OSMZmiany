@@ -42,6 +42,8 @@ import java.awt.Color;
 import javax.swing.JComboBox;
 import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
+import java.awt.event.ItemListener;
+import java.awt.event.ItemEvent;
 
 public class OSMZmiany extends JFrame implements ZMapWidgetListener,ConfigurationListener {
 	private static final long serialVersionUID = -2976479683829295126L;	
@@ -62,6 +64,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JComboBox cbProfiles;
 	private DefaultComboBoxModel profilesModel = new DefaultComboBoxModel();
 	private DefaultListModel model = new DefaultListModel();
+	private DefaultListModel modelUsers = new DefaultListModel();
 	
 	
 	private JButton btUser;
@@ -69,6 +72,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JButton btNode;
 	private JLabel lblBoxB1;
 	private JLabel lblBoxB2;
+	private JComboBox usersListType;
 	boolean setBox;
 
 	public OSMZmiany() {
@@ -242,7 +246,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		panel_2.add(btnShowSite);
 		
 		list = new JList(model);
-		list.setBounds(12, 703, 351, -655);
+		list.setBounds(12, 41, 351, 664);
 		panel_2.add(list);
 		
 		JPanel panel_3 = new JPanel();
@@ -297,19 +301,58 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		JButton btSelectChangeset = new JButton("Select changeset");
 		btSelectChangeset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Profile p=conf.getSelectedProfile();
-				if(p.getDrawStyle() instanceof SelectedDrawStyle){
-					SelectedDrawStyle sds=(SelectedDrawStyle)p.getDrawStyle();
-					Node n=sds.getSelectedNode();
-					if(n!=null){
-						sds.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
-						map.refrashOverlay();
-					}
-				}				
+				Node n=map.drawStyle.getSelectedNode();
+				if(n!=null){
+					map.drawStyle.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
+					map.refrashOverlay();
+				}								
 			}
 		});
-		btSelectChangeset.setBounds(12, 90, 216, 24);
+		btSelectChangeset.setBounds(13, 116, 216, 24);
 		panel_3.add(btSelectChangeset);
+		
+		JButton btnAddUser = new JButton("Add to list");
+		btnAddUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(map.drawStyle.getSelectedNode()!=null){
+					conf.getSelectedProfile().addUser(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(map.drawStyle.getSelectedNode().changesetId)).userId));
+				}else if(map.drawStyle.getSelectedChangeset()!=null){
+					conf.getSelectedProfile().addUser(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(map.drawStyle.getSelectedChangeset().id)).userId));
+				}
+				reloadUsersList();
+			}
+		});
+		
+		btnAddUser.setBounds(109, 90, 120, 14);
+		panel_3.add(btnAddUser);
+		
+		JPanel panel_4 = new JPanel();
+		tabbedPane.addTab("Users list", null, panel_4, null);
+		panel_4.setLayout(null);
+		
+		usersListType = new JComboBox();
+		usersListType.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent arg0) {
+				//System.out.println(usersListType.getSelectedIndex());
+				boolean z=false;
+				if(usersListType.getSelectedIndex()==1)
+					z=true;
+				conf.getSelectedProfile().setListType(z);
+				reloadUsersList();
+				map.refrashOverlay();
+			}
+		});
+		usersListType.setModel(new DefaultComboBoxModel(new String[] {"Blacklist", "Whitelist"}));
+		usersListType.setBounds(100, 12, 145, 23);
+		panel_4.add(usersListType);
+		
+		JLabel lblListType = new JLabel("List type");
+		lblListType.setBounds(12, 16, 70, 14);
+		panel_4.add(lblListType);
+		
+		JList listUsers = new JList(modelUsers);
+		listUsers.setBounds(12, 47, 233, 618);
+		panel_4.add(listUsers);
 		setVisible(true);
 
 
@@ -330,6 +373,8 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		}, 20000, 30000);	
 		
 		reloadProfiles();
+		reloadUserType();
+		reloadUsersList();
 		map.refrashOverlay();
 
 	}
@@ -414,17 +459,11 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		btNode.setText(Long.toString(node.id));
 		btChangeset.setText(Long.toString(node.changesetId));
 		btUser.setText(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(node.changesetId)).userId).name);
-		
-		Profile p=conf.getSelectedProfile();
-		if(p.getDrawStyle() instanceof SelectedDrawStyle){
-			SelectedDrawStyle sds=(SelectedDrawStyle)p.getDrawStyle();
-			sds.setSelection(node);
-			map.refrashOverlay();
-		}
+		map.drawStyle.setSelection(node);
 	}
 
 	public void profileChanged(Profile p) {
-		map.setDrawStyle(p.getDrawStyle());				
+					
 	}
 	
 	public void reloadProfiles(){
@@ -432,6 +471,21 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		Profile[] p=conf.getProfiles();
 		for(int i=0;i<p.length;i++)
 			profilesModel.addElement(p[i].getName());
+	}
+	
+	public void reloadUserType(){
+		Profile p=conf.getSelectedProfile();
+		//Combo type
+		usersListType.setSelectedIndex(p.getListType()?0:1);
+	}
+	
+	public void reloadUsersList(){
+		Profile p=conf.getSelectedProfile();
+		//Users
+		modelUsers.removeAllElements();
+		User[]users=p.getUsers();
+		for(int i=0;i<users.length;i++)
+			modelUsers.addElement(users[i].id+":"+users[i].name);
 	}
 	
 	

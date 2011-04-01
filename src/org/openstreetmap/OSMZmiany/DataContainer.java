@@ -2,6 +2,7 @@ package org.openstreetmap.OSMZmiany;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -50,11 +51,7 @@ public class DataContainer extends DefaultHandler{
 		public Changeset(long id,long time,long user){this.id=id;this.userId=user;this.time=time;}
 	}
 	
-	class User{
-		String name;
-		long id;		
-		public User(long id,String name){this.id=id;this.name=name;}
-	}
+	
 	
 	HashMap<Long,Node> nodes=new HashMap<Long,Node>();
 	HashMap<Long,Way> ways=new HashMap<Long,Way>();

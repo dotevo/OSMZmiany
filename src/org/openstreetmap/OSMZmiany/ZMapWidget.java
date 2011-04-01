@@ -24,8 +24,8 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	
 	private Coordinate c1;
 	private Coordinate c2;
-	private DataContainer dc;
-	private DrawStyle drawStyle;
+	public DataContainer dc;
+	public DrawStyle drawStyle=new DrawStyle();
 	
 	private ArrayList<ZMapWidgetListener> zMapWidgetListeners=new ArrayList<ZMapWidgetListener>();
 	
@@ -138,10 +138,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 		refrashOverlay();		
 	}
 	
-	public void setDrawStyle(DrawStyle ds){
-		drawStyle=ds;
-	}
-	
+		
 	public void addZMapWidgetListener(ZMapWidgetListener z){
 		zMapWidgetListeners.add(z);
 	}

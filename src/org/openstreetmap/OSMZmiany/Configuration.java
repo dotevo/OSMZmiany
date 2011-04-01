@@ -10,13 +10,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-import org.openstreetmap.OSMZmiany.DataContainer.User;
 
 public class Configuration implements Serializable {
 	class Profile implements Serializable{
 		private static final long serialVersionUID = 1L;
 		//Type of list true=whitelist;false=blacklist
-		private boolean listType=true;
+		private boolean listType=false;
 		private ArrayList<User> users=new ArrayList<User>();
 		//Show data
 		//-1=ALL;0=created;1=modified;2=deleted
@@ -24,7 +23,6 @@ public class Configuration implements Serializable {
 		private String name;
 		
 		private MapFilter mapfilter;
-		private DrawStyle drawStyle;
 		
 		public Profile(String name){
 			this.name=name;
@@ -32,10 +30,7 @@ public class Configuration implements Serializable {
 		//SETTERS
 		public void setMapFilter(MapFilter mf){
 			mapfilter=mf;
-		}
-		public void setDrawStyle(DrawStyle ds){
-			drawStyle=ds;
-		}
+		}		
 		public void setShowType(short type){
 			showType=type;
 		}
@@ -48,10 +43,7 @@ public class Configuration implements Serializable {
 		//GETTERS
 		public MapFilter getMapFilter(){
 			return mapfilter;
-		}
-		public DrawStyle getDrawStyle(){
-			return drawStyle;
-		}
+		}		
 		public short getShowType(){
 			return showType;
 		}
@@ -123,7 +115,7 @@ public class Configuration implements Serializable {
 		configurationListeners.add(cl);
 	}
 
-	
+	public static Configuration instance;
 	//////////////////////////LOAD AND SAVE SECTION///////////////////////////////
 	private static Configuration loadFromFile(String name) throws IOException, NotSerializableException, ClassNotFoundException{
 	    ObjectInputStream ois= new ObjectInputStream(new FileInputStream(name));
@@ -135,7 +127,8 @@ public class Configuration implements Serializable {
 	public static Configuration loadFromFile(){
 		//TODO CROSSPLATFORM HOMEDIR
 		try {
-			return loadFromFile(".OSMZMIANY_CONFIG");
+			instance=loadFromFile(".OSMZMIANY_CONFIG");
+			return instance;
 		} catch (NotSerializableException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
