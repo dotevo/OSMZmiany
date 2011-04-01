@@ -22,8 +22,11 @@ import javax.swing.JFrame;
 import org.openstreetmap.OSMZmiany.Configuration.Profile;
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
+import org.openstreetmap.gui.jmapviewer.Coordinate;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JSplitPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -41,10 +44,6 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 
 public class OSMZmiany extends JFrame implements ZMapWidgetListener,ConfigurationListener {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2976479683829295126L;	
 	
 	public static OSMZmiany instance;
@@ -60,16 +59,22 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JTextField tfURL;
 	private JCheckBox cbxLiveEdit;
 	private JList list;
+	private JComboBox cbProfiles;
+	private DefaultComboBoxModel profilesModel = new DefaultComboBoxModel();
 	private DefaultListModel model = new DefaultListModel();
 	
 	
 	private JButton btUser;
 	private JButton btChangeset;
 	private JButton btNode;
+	private JLabel lblBoxB1;
+	private JLabel lblBoxB2;
+	boolean setBox;
 
 	public OSMZmiany() {
 		dc=new DataContainer();
 		this.setTitle("OSMZmiany");
+		this.addWindowListener(new windowHandler());
 		
 		
 		GridBagLayout gbl = new GridBagLayout();
@@ -89,6 +94,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 				
 		conf=Configuration.loadFromFile();
 		conf.addConfigurationListener(this);
+		dc.setNewDataFilter(conf.getSelectedProfile().getMapFilter());
 		//MAP
 		map = new ZMapWidget(dc);
 		map.setSize(400, 400);
@@ -113,7 +119,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		btnSetBox.setBounds(41, 127, 129, 24);
 		btnSetBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				map.setBBox();
+				setBox=true;
 			}
 		});
 		
@@ -121,7 +127,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		btnRemoveBox.setBounds(175, 127, 118, 24);
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				map.removeBBox();
+				dc.mapfilter=null;
 			}
 		});
 		panel_1.setLayout(null);
@@ -177,13 +183,13 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		
 		panel_1.add(btnClear);
 		
-		JButton button = new JButton("Add");
-		button.setBounds(198, 43, 95, 24);
-		panel_1.add(button);
+		JButton btAddProfile = new JButton("Add");
+		btAddProfile.setBounds(198, 43, 95, 24);
+		panel_1.add(btAddProfile);
 		
-		JComboBox comboBox = new JComboBox();
-		comboBox.setBounds(100, 8, 193, 23);
-		panel_1.add(comboBox);
+		cbProfiles = new JComboBox(profilesModel);
+		cbProfiles.setBounds(100, 8, 193, 23);
+		panel_1.add(cbProfiles);
 		
 		JLabel label = new JLabel("Profile");
 		label.setBounds(12, 12, 70, 14);
@@ -201,19 +207,30 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		lblPointB.setBounds(43, 189, 70, 14);
 		panel_1.add(lblPointB);
 		
-		JLabel lblNotSelected = new JLabel("Not selected");
-		lblNotSelected.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblNotSelected.setBounds(123, 163, 170, 14);
-		panel_1.add(lblNotSelected);
+		lblBoxB1 = new JLabel("Not selected");
+		lblBoxB1.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblBoxB1.setBounds(123, 163, 170, 14);
+		panel_1.add(lblBoxB1);
 		
-		JLabel lblNewLabel = new JLabel("Not selected");
-		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-		lblNewLabel.setBounds(125, 189, 168, 14);
-		panel_1.add(lblNewLabel);
+		lblBoxB2 = new JLabel("Not selected");
+		lblBoxB2.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblBoxB2.setBounds(125, 189, 168, 14);
+		panel_1.add(lblBoxB2);
 		
 		JSeparator separator_1 = new JSeparator();
 		separator_1.setBounds(12, 230, 351, 2);
 		panel_1.add(separator_1);
+		
+		JButton btnEditInP2 = new JButton("Edit in Potlatch2");
+		btnEditInP2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int i=map.getZoom();
+				Coordinate c=map.getPosition();
+				openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
+			}
+		});
+		btnEditInP2.setBounds(12, 681, 158, 24);
+		panel_1.add(btnEditInP2);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
@@ -286,6 +303,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 					Node n=sds.getSelectedNode();
 					if(n!=null){
 						sds.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
+						map.refrashOverlay();
 					}
 				}				
 			}
@@ -309,7 +327,10 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 					getData();
 				}
 			}
-		}, 20000, 30000);		
+		}, 20000, 30000);	
+		
+		reloadProfiles();
+		map.refrashOverlay();
 
 	}
 
@@ -398,10 +419,51 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		if(p.getDrawStyle() instanceof SelectedDrawStyle){
 			SelectedDrawStyle sds=(SelectedDrawStyle)p.getDrawStyle();
 			sds.setSelection(node);
+			map.refrashOverlay();
 		}
 	}
 
 	public void profileChanged(Profile p) {
 		map.setDrawStyle(p.getDrawStyle());				
+	}
+	
+	public void reloadProfiles(){
+		profilesModel.removeAllElements();
+		Profile[] p=conf.getProfiles();
+		for(int i=0;i<p.length;i++)
+			profilesModel.addElement(p[i].getName());
+	}
+	
+	
+	private class windowHandler extends WindowAdapter
+	{
+		public void windowClosing( java.awt.event.WindowEvent event )
+		{            
+			System.out.println("EXIT");
+			conf.saveToFile();
+		}
+	}
+
+
+	public void boxDrawed(Coordinate c1, Coordinate c2) {
+		if(setBox){
+		double d1=Math.round(c1.getLat()*100);
+		d1/=100;
+		double d2=Math.round(c1.getLon()*100);
+		d2/=100;
+		double e1=Math.round(c2.getLat()*100);
+		e1/=100;
+		double e2=Math.round(c2.getLon()*100);
+		e2/=100;
+		
+		lblBoxB1.setText("LAT:"+d1+";LON:"+d2);
+		lblBoxB2.setText("LAT:"+e1+";LON:"+e2);
+		MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
+		dc.setNewDataFilter(mf);
+		dc.removeData(mf);		
+		conf.getSelectedProfile().setMapFilter(mf);
+		map.refrashOverlay();
+		setBox=false;
+		}
 	}
 }

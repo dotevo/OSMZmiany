@@ -22,7 +22,6 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	
 	private Image overlayI;
 	
-	public boolean setMapsBounds=false;
 	private Coordinate c1;
 	private Coordinate c2;
 	private DataContainer dc;
@@ -77,12 +76,12 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	}
 
 	public void mousePressed(MouseEvent arg0) {
-		if(setMapsBounds&&arg0.getButton()==1)
+		if(arg0.getButton()==1)
 			c1=getPosition(arg0.getX(), arg0.getY());		
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
-		if(setMapsBounds&&arg0.getButton()==1){
+		if(arg0.getButton()==1){
 			c2=getPosition(arg0.getX(), arg0.getY());
 			
 			//Corners
@@ -104,11 +103,9 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    		c2=new Coordinate(c2A.getLat(),c1A.getLon());
 	    	}
 			
-			MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
-			dc.setNewDataFilter(mf);
-			dc.removeData(mf);
-			setMapsBounds=false;
-			refrashOverlay();			
+			for(int i=0;i<zMapWidgetListeners.size();i++){
+				zMapWidgetListeners.get(i).boxDrawed(c1, c2);
+			}	    				
 		}		
 	}
 
@@ -126,32 +123,16 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 			Iterator<Long> iterator = dc.nodes.keySet().iterator();
 	    	while (iterator.hasNext()) {
 	    		Node node=dc.nodes.get(iterator.next());
-	    		drawStyle.drawNode(g, node);	    	
+	    		drawStyle.drawNode(g,this, node);	    	
 	    	}
 		}
+		if(dc.mapfilter instanceof DrawerOverlay){
+			DrawerOverlay dov=(DrawerOverlay)dc.mapfilter;
+			dov.draw(g, this);
+		}
 	    
-	    
-	    if(c1!=null&&c2!=null){	    	
-	    	Point p = getMapPosition(c1.getLat(),c1.getLon());
-	    	Point p2 = getMapPosition(c2.getLat(),c2.getLon());
-	    	if(p!=null&&p2!=null){
-	    		g.setColor(Color.orange);
-    			g.drawRect(p.x, p.y,p2.x-p.x, p2.y-p.y);
-	    	}
-	    }
-	    repaint();
 	}
 
-	public void removeBBox() {
-		setMapsBounds=false;
-		c1=null;
-		c2=null;
-		this.refrashOverlay();		
-	}
-
-	public void setBBox() {
-		setMapsBounds=true;		
-	}
 
 	public void dataChanged() {
 		refrashOverlay();		

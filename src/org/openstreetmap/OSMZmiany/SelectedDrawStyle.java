@@ -8,19 +8,17 @@ import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 
 public class SelectedDrawStyle implements DrawStyle{
-	private ZMapWidget map;
 	
+	private static final long serialVersionUID = 383857840267103977L;
 	private Changeset selCh;
 	private Node selNode;
+	
 	
 	public SelectedDrawStyle(){
 	}
 	
-	public void setZMapWidget(ZMapWidget map){
-		this.map=map;
-	}
-	
-	public void drawNode(Graphics g,Node node) {
+		
+	public void drawNode(Graphics g,ZMapWidget map,Node node) {
 		switch(node.mode){
 			case 0: {
 				g.setColor(Color.BLUE);
@@ -49,12 +47,10 @@ public class SelectedDrawStyle implements DrawStyle{
 	public void setSelection(Changeset ch){
 		selNode=null;
 		selCh=ch;
-		map.refrashOverlay();
 	}
 	public void setSelection(Node node){
 		selCh=null;
 		selNode=node;
-		map.refrashOverlay();
 	}
 	public Node getSelectedNode(){
 		return selNode;
@@ -62,4 +58,6 @@ public class SelectedDrawStyle implements DrawStyle{
 	public Changeset getSelectedChangeset(){
 		return selCh;
 	}
+
+
 }

@@ -175,6 +175,7 @@ public class DataContainer extends DefaultHandler{
 
 	public void setNewDataFilter(MapFilter mf) {
 		mapfilter=mf;
+		
 	}
 
 

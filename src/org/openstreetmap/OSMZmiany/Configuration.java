@@ -13,7 +13,8 @@ import java.util.ArrayList;
 import org.openstreetmap.OSMZmiany.DataContainer.User;
 
 public class Configuration implements Serializable {
-	class Profile{
+	class Profile implements Serializable{
+		private static final long serialVersionUID = 1L;
 		//Type of list true=whitelist;false=blacklist
 		private boolean listType=true;
 		private ArrayList<User> users=new ArrayList<User>();
@@ -82,7 +83,7 @@ public class Configuration implements Serializable {
 	public Configuration(){
 		//default
 		Profile p=new Profile("My profile");
-		p.drawStyle=new SelectedDrawStyle();
+		//p.drawStyle=new SelectedDrawStyle();
 		p.mapfilter=null;
 		profiles.add(p);
 	}
@@ -148,6 +149,9 @@ public class Configuration implements Serializable {
 	}
 	
 	private void saveToFile(String filename) throws FileNotFoundException, IOException{
+		//Clear listeners		
+		configurationListeners.clear();
+		
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename));
         oos.writeObject(this);
         oos.close();
@@ -164,7 +168,5 @@ public class Configuration implements Serializable {
 		}
 	}
 	
-	public static void main(String[] arg){
-		
-	}
+	
 }
