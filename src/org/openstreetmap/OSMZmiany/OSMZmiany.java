@@ -235,6 +235,15 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		});
 		btnEditInP2.setBounds(12, 681, 158, 24);
 		panel_1.add(btnEditInP2);
+		
+		JButton btnEditInJosm = new JButton("Edit in JOSM");
+		btnEditInJosm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+//TODO:				http://localhost:8111/load_and_zoom?left=16.8853396&right=16.8873396&top=52.4321631&bottom=52.4301631
+			}
+		});
+		btnEditInJosm.setBounds(176, 681, 129, 24);
+		panel_1.add(btnEditInJosm);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();

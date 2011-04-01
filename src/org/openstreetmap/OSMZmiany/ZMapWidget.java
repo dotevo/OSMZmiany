@@ -130,7 +130,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 			DrawerOverlay dov=(DrawerOverlay)dc.mapfilter;
 			dov.draw(g, this);
 		}
-	    
+	    repaint();
 	}
 
 
