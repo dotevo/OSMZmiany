@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -18,6 +19,7 @@ import java.util.zip.GZIPInputStream;
 
 import javax.swing.JFrame;
 
+import org.openstreetmap.OSMZmiany.Configuration.Profile;
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 
@@ -34,8 +36,11 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
 import java.awt.Color;
+import javax.swing.JComboBox;
+import javax.swing.JSeparator;
+import javax.swing.SwingConstants;
 
-public class OSMZmiany extends JFrame implements ZMapWidgetListener {
+public class OSMZmiany extends JFrame implements ZMapWidgetListener,ConfigurationListener {
 
 	/**
 	 * 
@@ -48,7 +53,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 	private int seqNum;
 		
 	public DataContainer dc;
-	private SelectedDrawStyle sDS;
+	private Configuration conf;
 	
 	//Widgets
 	private ZMapWidget map;
@@ -66,6 +71,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		dc=new DataContainer();
 		this.setTitle("OSMZmiany");
 		
+		
 		GridBagLayout gbl = new GridBagLayout();
 		gbl.rowWeights = new double[]{1.0};
 		gbl.columnWeights = new double[]{1.0};		
@@ -80,12 +86,15 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		getContentPane().add(splitPane, gbc_splitPane);
 		
 		this.setSize(800, 800);
-		
+				
+		conf=Configuration.loadFromFile();
+		conf.addConfigurationListener(this);
 		//MAP
 		map = new ZMapWidget(dc);
 		map.setSize(400, 400);
-		sDS=new SelectedDrawStyle(map);
-		map.setDrawStyle(sDS);
+		
+		Profile p=conf.getSelectedProfile();
+		this.profileChanged(p);
 		map.addZMapWidgetListener(this);
 				
 				
@@ -101,7 +110,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		tabbedPane.addTab("General", null, panel_1, null);
 		
 		final JButton btnSetBox = new JButton("Set Box");
-		btnSetBox.setBounds(94, 41, 129, 24);
+		btnSetBox.setBounds(41, 127, 129, 24);
 		btnSetBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				map.setBBox();
@@ -109,7 +118,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		});
 		
 		JButton btnRemoveBox = new JButton("Remove Box");
-		btnRemoveBox.setBounds(230, 41, 118, 24);
+		btnRemoveBox.setBounds(175, 127, 118, 24);
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				map.removeBBox();
@@ -118,27 +127,27 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		panel_1.setLayout(null);
 		
 		JLabel lblSetBoundary = new JLabel("Set boundary:");
-		lblSetBoundary.setBounds(12, 10, 101, 14);
+		lblSetBoundary.setBounds(12, 93, 101, 14);
 		panel_1.add(lblSetBoundary);
 		panel_1.add(btnRemoveBox);
 		
 		panel_1.add(btnSetBox);
 		
 		JLabel lblData = new JLabel("Data:");
-		lblData.setBounds(12, 86, 39, 14);
+		lblData.setBounds(12, 244, 39, 14);
 		panel_1.add(lblData);
 		
 		JLabel lblDiffUrl = new JLabel("Diff URL");
-		lblDiffUrl.setBounds(12, 117, 55, 14);
+		lblDiffUrl.setBounds(12, 270, 55, 14);
 		panel_1.add(lblDiffUrl);
 		
 		tfURL = new JTextField();
-		tfURL.setBounds(94, 112, 254, 24);
+		tfURL.setBounds(94, 270, 199, 24);
 		panel_1.add(tfURL);
 		tfURL.setColumns(10);
 		
 		JButton btnLoad = new JButton("Load");
-		btnLoad.setBounds(279, 148, 69, 24);
+		btnLoad.setBounds(224, 307, 69, 24);
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				getData(tfURL.getText());
@@ -147,7 +156,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		panel_1.add(btnLoad);
 		
 		cbxLiveEdit = new JCheckBox("Live edit diff");
-		cbxLiveEdit.setBounds(94, 184, 159, 22);
+		cbxLiveEdit.setBounds(11, 353, 159, 22);
 		cbxLiveEdit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				getData();	
@@ -158,7 +167,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		
 		
 		JButton btnClear = new JButton("Clear");
-		btnClear.setBounds(277, 184, 71, 24);
+		btnClear.setBounds(224, 393, 71, 24);
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dc.clear();	
@@ -167,6 +176,44 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		
 		
 		panel_1.add(btnClear);
+		
+		JButton button = new JButton("Add");
+		button.setBounds(198, 43, 95, 24);
+		panel_1.add(button);
+		
+		JComboBox comboBox = new JComboBox();
+		comboBox.setBounds(100, 8, 193, 23);
+		panel_1.add(comboBox);
+		
+		JLabel label = new JLabel("Profile");
+		label.setBounds(12, 12, 70, 14);
+		panel_1.add(label);
+		
+		JSeparator separator = new JSeparator();
+		separator.setBounds(12, 79, 351, 2);
+		panel_1.add(separator);
+		
+		JLabel lblPointA = new JLabel("Point A:");
+		lblPointA.setBounds(41, 163, 70, 14);
+		panel_1.add(lblPointA);
+		
+		JLabel lblPointB = new JLabel("Point B:");
+		lblPointB.setBounds(43, 189, 70, 14);
+		panel_1.add(lblPointB);
+		
+		JLabel lblNotSelected = new JLabel("Not selected");
+		lblNotSelected.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblNotSelected.setBounds(123, 163, 170, 14);
+		panel_1.add(lblNotSelected);
+		
+		JLabel lblNewLabel = new JLabel("Not selected");
+		lblNewLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+		lblNewLabel.setBounds(125, 189, 168, 14);
+		panel_1.add(lblNewLabel);
+		
+		JSeparator separator_1 = new JSeparator();
+		separator_1.setBounds(12, 230, 351, 2);
+		panel_1.add(separator_1);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
@@ -233,10 +280,14 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		JButton btSelectChangeset = new JButton("Select changeset");
 		btSelectChangeset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Node n=sDS.getSelectedNode();
-				if(n!=null){
-					sDS.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
-				}
+				Profile p=conf.getSelectedProfile();
+				if(p.getDrawStyle() instanceof SelectedDrawStyle){
+					SelectedDrawStyle sds=(SelectedDrawStyle)p.getDrawStyle();
+					Node n=sds.getSelectedNode();
+					if(n!=null){
+						sds.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
+					}
+				}				
 			}
 		});
 		btSelectChangeset.setBounds(12, 90, 216, 24);
@@ -277,8 +328,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 			br.readLine();
 			br.close();
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
-			System.exit(1);
+			System.err.println("initChangeStream: Connection error!");
 		}
 	}
 
@@ -343,6 +393,15 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener {
 		btNode.setText(Long.toString(node.id));
 		btChangeset.setText(Long.toString(node.changesetId));
 		btUser.setText(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(node.changesetId)).userId).name);
-		sDS.setSelection(node);		
+		
+		Profile p=conf.getSelectedProfile();
+		if(p.getDrawStyle() instanceof SelectedDrawStyle){
+			SelectedDrawStyle sds=(SelectedDrawStyle)p.getDrawStyle();
+			sds.setSelection(node);
+		}
+	}
+
+	public void profileChanged(Profile p) {
+		map.setDrawStyle(p.getDrawStyle());				
 	}
 }

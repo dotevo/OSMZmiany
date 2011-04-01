@@ -13,7 +13,10 @@ public class SelectedDrawStyle implements DrawStyle{
 	private Changeset selCh;
 	private Node selNode;
 	
-	public SelectedDrawStyle(ZMapWidget map){
+	public SelectedDrawStyle(){
+	}
+	
+	public void setZMapWidget(ZMapWidget map){
 		this.map=map;
 	}
 	
