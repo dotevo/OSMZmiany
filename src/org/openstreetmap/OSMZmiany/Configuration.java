@@ -15,30 +15,42 @@ public class Configuration implements Serializable {
 	class Profile implements Serializable{
 		private static final long serialVersionUID = 1L;
 		//Type of list true=whitelist;false=blacklist
-		private boolean listType=false;
+		private boolean listType=true;
 		private ArrayList<User> users=new ArrayList<User>();
 		//Show data
 		//-1=ALL;0=created;1=modified;2=deleted
 		private short showType=-1;
 		private String name;
+		private Configuration conf;
 		
 		private MapFilter mapfilter;
 		
 		public Profile(String name){
 			this.name=name;
 		}
+		public void setConfList(Configuration a){
+			conf=a;
+		}
 		//SETTERS
 		public void setMapFilter(MapFilter mf){
 			mapfilter=mf;
+			if(conf!=null)
+				conf.sendProfileChanged(this);			
 		}		
 		public void setShowType(short type){
 			showType=type;
+			if(conf!=null)
+				conf.sendProfileChanged(this);			
 		}
 		public void setListType(boolean type){
 			listType=type;
+			if(conf!=null)
+				conf.sendProfileChanged(this);		
 		}
 		public void setName(String name){
 			this.name=name;
+			if(conf!=null)
+				conf.sendProfileChanged(this);			
 		}
 		//GETTERS
 		public MapFilter getMapFilter(){
@@ -97,6 +109,7 @@ public class Configuration implements Serializable {
 	public void addProfile(Profile profile){
 		//TODO NAME TEST
 		profiles.add(profile);
+		profile.setConfList(this);
 	}
 	
 	public void removeProfile(String name){
@@ -120,9 +133,13 @@ public class Configuration implements Serializable {
 		int z=profiles.lastIndexOf(p);
 		if(z!=-1){
 			selectedProfile=z;
-			for(int j=0;j<configurationListeners.size();j++)
-				configurationListeners.get(j).profileChanged(profiles.get(z));
+			sendProfileChanged(profiles.get(selectedProfile));
 		}
+	}
+	
+	public void sendProfileChanged(Profile z){
+		for(int j=0;j<configurationListeners.size();j++)
+			configurationListeners.get(j).profileChanged(z);
 	}
 	
 	public void addConfigurationListener(ConfigurationListener cl){

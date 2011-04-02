@@ -20,7 +20,6 @@ public class DataContainer extends DefaultHandler{
 	short mode=0;
 
 	DateParser dp = new DateParser();
-	MapFilter mapfilter=null;
 	
 	class Node{
 		long id;
@@ -118,7 +117,8 @@ public class DataContainer extends DefaultHandler{
 			 
 			 
 			 Node node=getNode(id,lat,lon,changesetId,mode);
-			 if(mapfilter!=null&&!mapfilter.nodeFilter(node))
+			 MapFilter mf=Configuration.instance.getSelectedProfile().getMapFilter();
+			 if(mf!=null&&!mf.nodeFilter(node))
 				 nodes.remove(id);
 			 else{			 
 				 getChangeset(changesetId,time,uid);
@@ -169,12 +169,7 @@ public class DataContainer extends DefaultHandler{
 	}
 
 
-	public void setNewDataFilter(MapFilter mf) {
-		mapfilter=mf;
-		
-	}
-
-
+	
 	public void removeData(MapFilter mf) {
 		//Remove data
 		

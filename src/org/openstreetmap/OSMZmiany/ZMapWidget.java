@@ -126,8 +126,9 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    		drawStyle.drawNode(g,this, node);	    	
 	    	}
 		}
-		if(dc.mapfilter instanceof DrawerOverlay){
-			DrawerOverlay dov=(DrawerOverlay)dc.mapfilter;
+		MapFilter mf=Configuration.instance.getSelectedProfile().getMapFilter();
+		if(mf instanceof DrawerOverlay){
+			DrawerOverlay dov=(DrawerOverlay)mf;
 			dov.draw(g, this);
 		}
 	    repaint();

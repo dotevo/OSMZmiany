@@ -84,8 +84,20 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		dc=new DataContainer();
 		this.setTitle("OSMZmiany");
 		this.addWindowListener(new windowHandler());
+						
+		conf=Configuration.loadFromFile();
+		conf.addConfigurationListener(this);
+		//MAP
+		map = new ZMapWidget(dc);
+		Profile p=conf.getSelectedProfile();
+		map.addZMapWidgetListener(this);
 		
+		makeGUI();
 		
+		this.profileChanged(p);
+	}
+	
+	public void makeGUI(){
 		GridBagLayout gbl = new GridBagLayout();
 		gbl.rowWeights = new double[]{1.0};
 		gbl.columnWeights = new double[]{1.0};		
@@ -100,20 +112,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		getContentPane().add(splitPane, gbc_splitPane);
 		
 		this.setSize(723, 472);
-				
-		conf=Configuration.loadFromFile();
-		conf.addConfigurationListener(this);
-		dc.setNewDataFilter(conf.getSelectedProfile().getMapFilter());
-		//MAP
-		map = new ZMapWidget(dc);
-		
-		
-		Profile p=conf.getSelectedProfile();
-		this.profileChanged(p);
-		map.addZMapWidgetListener(this);
-				
-				
-		splitPane.setRightComponent(map);
+splitPane.setRightComponent(map);
 		
 		JPanel panel = new JPanel();
 		splitPane.setLeftComponent(panel);
@@ -137,7 +136,8 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		btnRemoveBox.setBounds(175, 127, 118, 24);
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				dc.mapfilter=null;
+				conf.getSelectedProfile().setMapFilter(null);
+				map.refrashOverlay();
 			}
 		});
 		panel_1.setLayout(null);
@@ -409,10 +409,6 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 			}
 		}, 20000, 30000);	
 		
-		reloadProfiles();
-		reloadUserType();
-		reloadUsersList();
-		map.refrashOverlay();
 
 	}
 
@@ -500,7 +496,10 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	}
 
 	public void profileChanged(Profile p) {
-					
+		this.reloadProfiles();
+		this.reloadUsersList();
+		this.reloadUserType();		
+		map.refrashOverlay();
 	}
 	
 	public void reloadProfiles(){
@@ -512,8 +511,8 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	
 	public void reloadUserType(){
 		Profile p=conf.getSelectedProfile();
-		//Combo type
-		usersListType.setSelectedIndex(p.getListType()?0:1);
+		//Combo type	
+		usersListType.setSelectedIndex(p.getListType()?1:0);
 	}
 	
 	public void reloadUsersList(){
@@ -534,6 +533,8 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 			conf.saveToFile();
 		}
 	}
+	
+	
 
 
 	public void boxDrawed(Coordinate c1, Coordinate c2) {
@@ -550,7 +551,6 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		lblBoxB1.setText("LAT:"+d1+";LON:"+d2);
 		lblBoxB2.setText("LAT:"+e1+";LON:"+e2);
 		MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
-		dc.setNewDataFilter(mf);
 		dc.removeData(mf);		
 		conf.getSelectedProfile().setMapFilter(mf);
 		map.refrashOverlay();
