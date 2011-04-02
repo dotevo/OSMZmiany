@@ -244,8 +244,12 @@ splitPane.setRightComponent(map);
 		
 		JButton btnEditInJosm = new JButton("Edit in JOSM");
 		btnEditInJosm.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-//TODO:				http://localhost:8111/load_and_zoom?left=16.8853396&right=16.8873396&top=52.4321631&bottom=52.4301631
+			public void actionPerformed(ActionEvent arg0) {				
+				Coordinate lC=map.getPosition(1, 1);
+				//corner
+				Coordinate mC=map.getPosition(map.getWidth()-1, map.getHeight()-1);
+				openURL("http://localhost:8111/load_and_zoom?left="+lC.getLon()+"&right="+mC.getLon()+"&top="+lC.getLat()+"&bottom="+mC.getLat());
+					
 			}
 		});
 		btnEditInJosm.setBounds(164, 379, 129, 24);
