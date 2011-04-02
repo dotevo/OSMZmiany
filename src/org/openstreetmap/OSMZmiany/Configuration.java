@@ -55,8 +55,22 @@ public class Configuration implements Serializable {
 		}
 		//USERS
 		public void addUser(User user){
-			users.add(user);
+			//if it doesn't exist on list
+			boolean is=false;
+			for(int i=0;i<users.size();i++)
+				if(user.equals(users.get(i)))
+					is=true;
+			if(is==false)
+				users.add(user);
 		}
+		public void removeUser(User user){
+			for(int i=0;i<users.size();){
+				if(user.equals(users.get(i)))
+					users.remove(i);
+				i++;
+			}
+		}
+		
 		public User[] getUsers(){
 			//TODO sort
 			User []user=new User[users.size()];

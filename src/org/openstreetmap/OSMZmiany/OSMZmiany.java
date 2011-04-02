@@ -44,6 +44,10 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import javax.swing.JScrollPane;
+import java.awt.GridLayout;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
 
 public class OSMZmiany extends JFrame implements ZMapWidgetListener,ConfigurationListener {
 	private static final long serialVersionUID = -2976479683829295126L;	
@@ -72,6 +76,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JButton btNode;
 	private JLabel lblBoxB1;
 	private JLabel lblBoxB2;
+	private JList listUsers ;
 	private JComboBox usersListType;
 	boolean setBox;
 
@@ -94,24 +99,25 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		gbc_splitPane.gridy = 0;
 		getContentPane().add(splitPane, gbc_splitPane);
 		
-		this.setSize(800, 800);
+		this.setSize(723, 472);
 				
 		conf=Configuration.loadFromFile();
 		conf.addConfigurationListener(this);
 		dc.setNewDataFilter(conf.getSelectedProfile().getMapFilter());
 		//MAP
 		map = new ZMapWidget(dc);
-		map.setSize(400, 400);
+		
 		
 		Profile p=conf.getSelectedProfile();
 		this.profileChanged(p);
 		map.addZMapWidgetListener(this);
 				
 				
-		splitPane.setLeftComponent(map);
+		splitPane.setRightComponent(map);
 		
 		JPanel panel = new JPanel();
-		splitPane.setRightComponent(panel);
+		splitPane.setLeftComponent(panel);
+		splitPane.setDividerLocation(350);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -166,7 +172,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		panel_1.add(btnLoad);
 		
 		cbxLiveEdit = new JCheckBox("Live edit diff");
-		cbxLiveEdit.setBounds(11, 353, 159, 22);
+		cbxLiveEdit.setBounds(12, 308, 159, 22);
 		cbxLiveEdit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				getData();	
@@ -177,7 +183,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		
 		
 		JButton btnClear = new JButton("Clear");
-		btnClear.setBounds(224, 393, 71, 24);
+		btnClear.setBounds(222, 343, 71, 24);
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dc.clear();	
@@ -233,7 +239,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 				openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
 			}
 		});
-		btnEditInP2.setBounds(12, 681, 158, 24);
+		btnEditInP2.setBounds(12, 379, 149, 24);
 		panel_1.add(btnEditInP2);
 		
 		JButton btnEditInJosm = new JButton("Edit in JOSM");
@@ -242,7 +248,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 //TODO:				http://localhost:8111/load_and_zoom?left=16.8853396&right=16.8873396&top=52.4321631&bottom=52.4301631
 			}
 		});
-		btnEditInJosm.setBounds(176, 681, 129, 24);
+		btnEditInJosm.setBounds(164, 379, 129, 24);
 		panel_1.add(btnEditInJosm);
 		panel.add(tabbedPane);
 		
@@ -257,6 +263,55 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		list = new JList(model);
 		list.setBounds(12, 41, 351, 664);
 		panel_2.add(list);
+		
+		JPanel panel_4 = new JPanel();
+		tabbedPane.addTab("Users list", null, panel_4, null);
+		panel_4.setLayout(new BoxLayout(panel_4, BoxLayout.Y_AXIS));
+		
+		JPanel panel_5 = new JPanel();
+		panel_4.add(panel_5);
+		panel_5.setLayout(null);
+		
+		JLabel lblListType = new JLabel("List type");
+		lblListType.setBounds(12, 16, 62, 14);
+		panel_5.add(lblListType);
+		
+		usersListType = new JComboBox();
+		usersListType.setBounds(87, 12, 204, 23);
+		panel_5.add(usersListType);
+		usersListType.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent arg0) {
+				//System.out.println(usersListType.getSelectedIndex());
+				boolean z=false;
+				if(usersListType.getSelectedIndex()==1)
+					z=true;
+				conf.getSelectedProfile().setListType(z);
+				reloadUsersList();
+				map.refrashOverlay();
+			}
+		});
+		usersListType.setModel(new DefaultComboBoxModel(new String[] {"Blacklist", "Whitelist"}));
+		
+		JButton btnRemoveUser = new JButton("Remove selected user");
+		btnRemoveUser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int i=listUsers.getSelectedIndex();
+				User[] us=conf.getSelectedProfile().getUsers();
+				if(i<us.length&&i>=0){
+					conf.getSelectedProfile().removeUser(us[i]);
+					reloadUsersList();
+					map.refrashOverlay();
+				}
+			}
+		});
+		btnRemoveUser.setBounds(87, 59, 204, 24);
+		panel_5.add(btnRemoveUser);
+		
+		JScrollPane scrollPane = new JScrollPane();
+		panel_4.add(scrollPane);
+		
+		listUsers = new JList(modelUsers);
+		scrollPane.setViewportView(listUsers);
 		
 		JPanel panel_3 = new JPanel();
 		tabbedPane.addTab("Info", null, panel_3, null);
@@ -329,39 +384,12 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 					conf.getSelectedProfile().addUser(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(map.drawStyle.getSelectedChangeset().id)).userId));
 				}
 				reloadUsersList();
+				map.refrashOverlay();
 			}
 		});
 		
 		btnAddUser.setBounds(109, 90, 120, 14);
 		panel_3.add(btnAddUser);
-		
-		JPanel panel_4 = new JPanel();
-		tabbedPane.addTab("Users list", null, panel_4, null);
-		panel_4.setLayout(null);
-		
-		usersListType = new JComboBox();
-		usersListType.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent arg0) {
-				//System.out.println(usersListType.getSelectedIndex());
-				boolean z=false;
-				if(usersListType.getSelectedIndex()==1)
-					z=true;
-				conf.getSelectedProfile().setListType(z);
-				reloadUsersList();
-				map.refrashOverlay();
-			}
-		});
-		usersListType.setModel(new DefaultComboBoxModel(new String[] {"Blacklist", "Whitelist"}));
-		usersListType.setBounds(100, 12, 145, 23);
-		panel_4.add(usersListType);
-		
-		JLabel lblListType = new JLabel("List type");
-		lblListType.setBounds(12, 16, 70, 14);
-		panel_4.add(lblListType);
-		
-		JList listUsers = new JList(modelUsers);
-		listUsers.setBounds(12, 47, 233, 618);
-		panel_4.add(listUsers);
 		setVisible(true);
 
 
