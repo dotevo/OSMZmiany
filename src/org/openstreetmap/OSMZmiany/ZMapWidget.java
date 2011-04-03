@@ -58,12 +58,11 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    		   p.y<arg0.getY()+3&&p.y>arg0.getY()-3){
 	    			for(int i=0;i<zMapWidgetListeners.size();i++){
 	    				zMapWidgetListeners.get(i).nodeClicked(node);
-	    			}
-	    			
+	    			}	    			
 	    			return;	    			
 	    		}
 	    	}
-	    }		
+	    }	    
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
@@ -129,7 +128,8 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 			if(node!=null)
 				changesetid=node.changesetId;					
 		}
-		if(changesetid!=-1){		
+		if(changesetid!=-1){	
+			System.out.println("CHANESET:"+changesetid);
 			Iterator<Long> iterator = dc.nodes.keySet().iterator();
 			if(iterator.hasNext()){
 				Node n=dc.nodes.get(iterator.next());
@@ -147,11 +147,12 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 					}
 				}
 				//Draw changeset box
-				Point p1=this.getMapPosition(left, top);
-				Point p2=this.getMapPosition(right, bottom);
+				Point p1=this.getMapPosition(left, top,false);
+				Point p2=this.getMapPosition(right, bottom,false);
 				if(p1!=null&&p2!=null){
-					g.setColor(new Color(255,0,0,125));
-			    	g.drawRect(p1.x, p1.y,p2.x-p1.x, p2.y-p1.y);
+					System.out.println(p1.x+":"+p1.y+";"+(p2.x-p1.x)+";"+(p2.y-p1.y));
+					g.setColor(new Color(255,0,0,30));
+			    	g.fillRect(p2.x, p2.y,p1.x-p2.x, p1.y-p2.y);
 				}					
 			}
 			

@@ -28,6 +28,7 @@ import org.openstreetmap.gui.jmapviewer.interfaces.MapRectangle;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -97,6 +98,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		makeGUI();
 		
 		this.profileChanged(p);
+		this.reloadProfiles();
 	}
 	
 	public void makeGUI(){
@@ -198,15 +200,26 @@ splitPane.setRightComponent(map);
 		JButton btAddProfile = new JButton("Add");
 		btAddProfile.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				/*NameDialog nd=new NameDialog("Name:");
-				nd.setVisible(true);
-				nd.get*/
+				String str=newStringDialog(instance,"New profile","Name:");
+				if(str!=null){					
+					profileChanged(conf.addProfile(str));
+					reloadProfiles();					
+				}
 			}
 		});
 		btAddProfile.setBounds(222, 43, 71, 24);
 		panel_1.add(btAddProfile);
 		
 		cbProfiles = new JComboBox(profilesModel);
+		cbProfiles.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent arg0) {
+				Profile []p=conf.getProfiles();
+				if(cbProfiles.getSelectedIndex()>=0&&cbProfiles.getSelectedIndex()<p.length){
+					conf.selectProfile(p[cbProfiles.getSelectedIndex()]);
+					reloadUserType();
+				}
+			}
+		});
 		cbProfiles.setBounds(94, 8, 199, 23);
 		panel_1.add(cbProfiles);
 		
@@ -240,31 +253,16 @@ splitPane.setRightComponent(map);
 		separator_1.setBounds(12, 230, 351, 2);
 		panel_1.add(separator_1);
 		
-		JButton btnEditInP2 = new JButton("Edit in Potlatch2");
-		btnEditInP2.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				int i=map.getZoom();
-				Coordinate c=map.getPosition();
-				openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
-			}
-		});
-		btnEditInP2.setBounds(12, 379, 149, 24);
-		panel_1.add(btnEditInP2);
 		
-		JButton btnEditInJosm = new JButton("Edit in JOSM");
-		btnEditInJosm.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {				
-				Coordinate lC=map.getPosition(1, 1);
-				//corner
-				Coordinate mC=map.getPosition(map.getWidth()-1, map.getHeight()-1);
-				openURL("http://localhost:8111/load_and_zoom?left="+lC.getLon()+"&right="+mC.getLon()+"&top="+lC.getLat()+"&bottom="+mC.getLat());
-					
-			}
-		});
-		btnEditInJosm.setBounds(164, 379, 129, 24);
-		panel_1.add(btnEditInJosm);
 		
 		JButton btRemoveProfile = new JButton("Remove");
+		btRemoveProfile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				conf.removeProfile((String)cbProfiles.getSelectedItem());
+				reloadProfiles();
+				reloadUserType();
+			}
+		});
 		btRemoveProfile.setBounds(94, 43, 95, 24);
 		panel_1.add(btRemoveProfile);
 		panel.add(tabbedPane);
@@ -388,6 +386,31 @@ splitPane.setRightComponent(map);
 		btSelectChangeset.setBounds(13, 116, 216, 24);
 		panel_3.add(btSelectChangeset);
 		
+		
+		JButton btnEditInP2 = new JButton("Edit in Potlatch2");
+		btnEditInP2.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int i=map.getZoom();
+				Coordinate c=map.getPosition();
+				openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
+			}
+		});
+		btnEditInP2.setBounds(12, 152, 149, 24);
+		panel_3.add(btnEditInP2);
+		
+		JButton btnEditInJosm = new JButton("Edit in JOSM");
+		btnEditInJosm.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {				
+				Coordinate lC=map.getPosition(1, 1);
+				//corner
+				Coordinate mC=map.getPosition(map.getWidth()-1, map.getHeight()-1);
+				openURL("http://localhost:8111/load_and_zoom?left="+lC.getLon()+"&right="+mC.getLon()+"&top="+lC.getLat()+"&bottom="+mC.getLat());
+					
+			}
+		});
+		btnEditInJosm.setBounds(12, 188, 149, 24);
+		panel_3.add(btnEditInJosm);
+		
 		JButton btnAddUser = new JButton("Add to list");
 		btnAddUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -503,18 +526,22 @@ splitPane.setRightComponent(map);
 		map.drawStyle.setSelection(node);
 	}
 
-	public void profileChanged(Profile p) {
-		this.reloadProfiles();
-		this.reloadUsersList();
-		this.reloadUserType();		
+	public void profileChanged(Profile p) {		
+		this.reloadUsersList();	
 		map.refrashOverlay();
 	}
 	
 	public void reloadProfiles(){
 		profilesModel.removeAllElements();
 		Profile[] p=conf.getProfiles();
-		for(int i=0;i<p.length;i++)
+		Profile s=conf.getSelectedProfile();
+		int tmpInt=0;
+		for(int i=0;i<p.length;i++){
+			if(p[i]==s)
+				tmpInt=i;
 			profilesModel.addElement(p[i].getName());
+		}
+		this.cbProfiles.setSelectedIndex(tmpInt);
 	}
 	
 	public void reloadUserType(){
@@ -567,4 +594,28 @@ splitPane.setRightComponent(map);
 		setBox=false;
 		}
 	}
+	
+	
+	
+	 private static String newStringDialog(JFrame frame,String name,String text) {
+	        JPanel panel = new JPanel();
+	        panel.add(new JLabel(text));
+	        final JTextField fooField = new JTextField(10);
+	        panel.add(fooField);
+	        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+	            public void run() {
+	                fooField.requestFocusInWindow();
+	            }
+	        });
+	        int choice = JOptionPane.showConfirmDialog(frame, panel,
+	                name, JOptionPane.OK_CANCEL_OPTION,
+	                JOptionPane.PLAIN_MESSAGE);
+
+	        switch (choice) {
+	        case JOptionPane.OK_OPTION:
+	            return fooField.getText();
+	        }
+	        return null;
+	    }
+
 }

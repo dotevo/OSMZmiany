@@ -24,9 +24,11 @@ public class DrawStyle {
 		Profile p=Configuration.instance.getSelectedProfile();
 		User[] u=p.getUsers();
 		//Blacklist
-		if(p.getListType()==2||p.getListType()==0){
+		if(p.getListType()==0){
+			drawNodeP(g,map,node);
+		}else if(p.getListType()==2){
 			for(int i=0;i<u.length;i++)
-				if(u[i].id==user.id||p.getListType()==0){
+				if(u[i].id==user.id){
 					drawNodeP(g,map,node);
 				}
 		}else{

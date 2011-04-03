@@ -129,8 +129,28 @@ public class Configuration implements Serializable {
 		profile.setConfList(this);
 	}
 	
+	public Profile addProfile(String str){
+		boolean isIn=false;
+		for(int i=0;i<profiles.size();i++)
+			if(profiles.get(i).name.equals(str))
+				isIn=true;
+		if(isIn)
+			return null;
+		Profile p=new Profile(str);
+		//TODO NAME TEST
+		profiles.add(p);
+		p.setConfList(this);
+		return p;
+	}
+	
+	
 	public void removeProfile(String name){
-		//TODO Function
+		if(profiles.size()<2)return;
+		for(int i=0;i<profiles.size();i++)
+			if(profiles.get(i).name.equals(name)){
+				profiles.remove(i);
+				return;
+			}
 	}
 	
 	public Profile[] getProfiles(){
@@ -143,6 +163,7 @@ public class Configuration implements Serializable {
 	}
 	
 	public Profile getSelectedProfile(){
+		if(selectedProfile>=profiles.size())selectedProfile=0;
 		return profiles.get(selectedProfile);
 	}
 	
