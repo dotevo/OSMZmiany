@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
 import org.openstreetmap.gui.jmapviewer.DefaultMapController;
@@ -115,8 +116,46 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	
 	
 	public void refrashOverlay(){
-		overlayI = new BufferedImage(this.getWidth(), this.getHeight(), BufferedImage.TYPE_INT_ARGB);		
+		overlayI = new BufferedImage(this.getWidth()+1, this.getHeight()+1, BufferedImage.TYPE_INT_ARGB);		
 		Graphics g = overlayI.getGraphics();
+		
+		
+		Changeset ch=drawStyle.getSelectedChangeset();
+		long changesetid=-1;
+		if(ch!=null){
+			changesetid=ch.id;
+		}else{
+			Node node=drawStyle.getSelectedNode();
+			if(node!=null)
+				changesetid=node.changesetId;					
+		}
+		if(changesetid!=-1){		
+			Iterator<Long> iterator = dc.nodes.keySet().iterator();
+			if(iterator.hasNext()){
+				Node n=dc.nodes.get(iterator.next());
+				double left=-360;
+				double right=-360;
+				double top=-360;
+				double bottom=-360;
+				while (iterator.hasNext()) {
+					Node node=dc.nodes.get(iterator.next());
+					if(node.changesetId==changesetid){
+						if(left>node.lat||left==-360)left=node.lat;
+    					if(right<node.lat||right==-360)right=node.lat;
+    					if(top<node.lon||top==-360)top=node.lon;
+    					if(bottom>node.lon||bottom==-360)bottom=node.lon;
+					}
+				}
+				//Draw changeset box
+				Point p1=this.getMapPosition(left, top);
+				Point p2=this.getMapPosition(right, bottom);
+				if(p1!=null&&p2!=null){
+					g.setColor(new Color(255,0,0,125));
+			    	g.drawRect(p1.x, p1.y,p2.x-p1.x, p2.y-p1.y);
+				}					
+			}
+			
+		}
 		g.setColor(Color.BLACK);
 		
 		if(drawStyle!=null){

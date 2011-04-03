@@ -23,6 +23,7 @@ import org.openstreetmap.OSMZmiany.Configuration.Profile;
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
+import org.openstreetmap.gui.jmapviewer.interfaces.MapRectangle;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
@@ -78,6 +79,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JLabel lblBoxB2;
 	private JList listUsers ;
 	private JComboBox usersListType;
+	private JSplitPane splitPane;
 	boolean setBox;
 
 	public OSMZmiany() {
@@ -104,19 +106,19 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		
 		getContentPane().setLayout(gbl);
 		
-		JSplitPane splitPane = new JSplitPane();
+		splitPane = new JSplitPane();
 		GridBagConstraints gbc_splitPane = new GridBagConstraints();
 		gbc_splitPane.fill = GridBagConstraints.BOTH;
 		gbc_splitPane.gridx = 0;
 		gbc_splitPane.gridy = 0;
 		getContentPane().add(splitPane, gbc_splitPane);
 		
-		this.setSize(723, 472);
+		this.setSize(conf.getWindowSize());
 splitPane.setRightComponent(map);
 		
 		JPanel panel = new JPanel();
 		splitPane.setLeftComponent(panel);
-		splitPane.setDividerLocation(350);
+		splitPane.setDividerLocation(conf.getDividerLocation());
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
 		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
@@ -194,11 +196,18 @@ splitPane.setRightComponent(map);
 		panel_1.add(btnClear);
 		
 		JButton btAddProfile = new JButton("Add");
-		btAddProfile.setBounds(198, 43, 95, 24);
+		btAddProfile.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				/*NameDialog nd=new NameDialog("Name:");
+				nd.setVisible(true);
+				nd.get*/
+			}
+		});
+		btAddProfile.setBounds(222, 43, 71, 24);
 		panel_1.add(btAddProfile);
 		
 		cbProfiles = new JComboBox(profilesModel);
-		cbProfiles.setBounds(100, 8, 193, 23);
+		cbProfiles.setBounds(94, 8, 199, 23);
 		panel_1.add(cbProfiles);
 		
 		JLabel label = new JLabel("Profile");
@@ -254,6 +263,10 @@ splitPane.setRightComponent(map);
 		});
 		btnEditInJosm.setBounds(164, 379, 129, 24);
 		panel_1.add(btnEditInJosm);
+		
+		JButton btRemoveProfile = new JButton("Remove");
+		btRemoveProfile.setBounds(94, 43, 95, 24);
+		panel_1.add(btRemoveProfile);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
@@ -285,16 +298,12 @@ splitPane.setRightComponent(map);
 		panel_5.add(usersListType);
 		usersListType.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent arg0) {
-				//System.out.println(usersListType.getSelectedIndex());
-				boolean z=false;
-				if(usersListType.getSelectedIndex()==1)
-					z=true;
-				conf.getSelectedProfile().setListType(z);
+				conf.getSelectedProfile().setListType((short)usersListType.getSelectedIndex());
 				reloadUsersList();
 				map.refrashOverlay();
 			}
 		});
-		usersListType.setModel(new DefaultComboBoxModel(new String[] {"Blacklist", "Whitelist"}));
+		usersListType.setModel(new DefaultComboBoxModel(new String[] {"None","Whitelist","Blacklist"}));
 		
 		JButton btnRemoveUser = new JButton("Remove selected user");
 		btnRemoveUser.addActionListener(new ActionListener() {
@@ -394,9 +403,7 @@ splitPane.setRightComponent(map);
 		
 		btnAddUser.setBounds(109, 90, 120, 14);
 		panel_3.add(btnAddUser);
-		setVisible(true);
-
-
+		
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				System.exit(0);
@@ -452,10 +459,7 @@ splitPane.setRightComponent(map);
 			System.out.println("Download: "+url);
 			dc.addData(bis);		
 		} catch (IOException ioe) {
-			if (ioe instanceof FileNotFoundException) {
-			} else {
-				ioe.printStackTrace();
-			}
+			System.err.println("getData(): IOExeception");
 		}
 	}
 
@@ -516,7 +520,7 @@ splitPane.setRightComponent(map);
 	public void reloadUserType(){
 		Profile p=conf.getSelectedProfile();
 		//Combo type	
-		usersListType.setSelectedIndex(p.getListType()?1:0);
+		usersListType.setSelectedIndex(p.getListType());
 	}
 	
 	public void reloadUsersList(){
@@ -534,6 +538,8 @@ splitPane.setRightComponent(map);
 		public void windowClosing( java.awt.event.WindowEvent event )
 		{            
 			System.out.println("EXIT");
+			conf.setDividerLocation(splitPane.getDividerLocation());
+			conf.setWindowSize(getSize());
 			conf.saveToFile();
 		}
 	}

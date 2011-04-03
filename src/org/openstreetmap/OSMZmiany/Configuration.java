@@ -1,5 +1,6 @@
 package org.openstreetmap.OSMZmiany;
 
+import java.awt.Dimension;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -14,8 +15,8 @@ import java.util.ArrayList;
 public class Configuration implements Serializable {
 	class Profile implements Serializable{
 		private static final long serialVersionUID = 1L;
-		//Type of list true=whitelist;false=blacklist
-		private boolean listType=true;
+		//Type of list 0-off;1=whitelist;2=blacklist;
+		private short listType=0;
 		private ArrayList<User> users=new ArrayList<User>();
 		//Show data
 		//-1=ALL;0=created;1=modified;2=deleted
@@ -42,7 +43,7 @@ public class Configuration implements Serializable {
 			if(conf!=null)
 				conf.sendProfileChanged(this);			
 		}
-		public void setListType(boolean type){
+		public void setListType(short type){
 			listType=type;
 			if(conf!=null)
 				conf.sendProfileChanged(this);		
@@ -59,7 +60,7 @@ public class Configuration implements Serializable {
 		public short getShowType(){
 			return showType;
 		}
-		public boolean getListType(){
+		public short getListType(){
 			return listType;
 		}
 		public String getName(){
@@ -97,6 +98,8 @@ public class Configuration implements Serializable {
 	private ArrayList<Profile> profiles=new ArrayList<Profile>();
 	private int selectedProfile=0;
 	private ArrayList<ConfigurationListener> configurationListeners=new ArrayList<ConfigurationListener>();
+	private Dimension windowSize;
+	private int dividerLocation=400;
 	
 	public Configuration(){
 		//default
@@ -104,6 +107,20 @@ public class Configuration implements Serializable {
 		//p.drawStyle=new SelectedDrawStyle();
 		p.mapfilter=null;
 		profiles.add(p);
+	}
+	
+	public Dimension getWindowSize(){
+		if(windowSize==null)windowSize=new Dimension(723, 472);
+		return windowSize;
+	}	
+	public int getDividerLocation(){
+		return dividerLocation;
+	}
+	public void setDividerLocation(int a){
+		dividerLocation=a;
+	}
+	public void setWindowSize(Dimension m){
+		windowSize=m;
 	}
 	
 	public void addProfile(Profile profile){
