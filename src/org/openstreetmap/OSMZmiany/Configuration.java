@@ -206,7 +206,8 @@ public class Configuration implements Serializable {
 			e.printStackTrace();
 		}
 		//Create default configuration
-		Configuration c=new Configuration();		
+		Configuration c=new Configuration();
+		instance =c;
 		return c;
 	}
 	

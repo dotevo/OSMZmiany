@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import org.openstreetmap.OSMZmiany.Configuration.Profile;
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
@@ -166,11 +167,13 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    		drawStyle.drawNode(g,this, node);	    	
 	    	}
 		}
-		MapFilter mf=Configuration.instance.getSelectedProfile().getMapFilter();
+		Profile p=Configuration.instance.getSelectedProfile();
+		if(p!=null){
+		MapFilter mf=p.getMapFilter();
 		if(mf instanceof DrawerOverlay){
 			DrawerOverlay dov=(DrawerOverlay)mf;
 			dov.draw(g, this);
-		}
+		}}
 	    repaint();
 	}
 
