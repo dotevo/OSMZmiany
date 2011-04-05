@@ -82,6 +82,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private JList listUsers ;
 	private JComboBox usersListType;
 	private JSplitPane splitPane;
+	private JButton btSelectChangeset;
 	boolean setBox;
 
 	public OSMZmiany() {
@@ -100,6 +101,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 		
 		this.profileChanged(p);
 		this.reloadProfiles();
+		btSChangeset();
 	}
 	
 	public void makeGUI(){
@@ -374,14 +376,15 @@ splitPane.setRightComponent(map);
 		btUser.setBounds(109, 64, 120, 14);
 		panel_3.add(btUser);
 		
-		JButton btSelectChangeset = new JButton("Select changeset");
+		btSelectChangeset = new JButton("Select changeset");
 		btSelectChangeset.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Node n=map.drawStyle.getSelectedNode();
 				if(n!=null){
 					map.drawStyle.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
 					map.refrashOverlay();
-				}								
+				}
+				btSChangeset();				
 			}
 		});
 		btSelectChangeset.setBounds(13, 116, 216, 24);
@@ -391,25 +394,39 @@ splitPane.setRightComponent(map);
 		JButton btnEditInP2 = new JButton("Edit in Potlatch2");
 		btnEditInP2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				int i=map.getZoom();
-				Coordinate c=map.getPosition();
-				openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
+				if(map.drawStyle.getSelectedChangeset()==null){
+					int i=map.getZoom();
+					Coordinate c=map.getPosition();
+					openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+c.getLat()+"&lon="+c.getLon()+"&zoom="+i);
+				}else{
+					Coordinate []p=map.getChangesetCoordinate(map.drawStyle.getSelectedChangeset().id);
+					double pA=p[0].getLat()+p[1].getLat();
+					pA/=2;
+					double pB=p[0].getLon()+p[1].getLon();
+					pB/=2;
+					openURL("http://www.openstreetmap.org/edit?editor=potlatch2&lat="+pA+"&lon="+pB+"&zoom=18");
+					
+				}
 			}
 		});
-		btnEditInP2.setBounds(12, 152, 149, 24);
+		btnEditInP2.setBounds(12, 152, 217, 24);
 		panel_3.add(btnEditInP2);
 		
 		JButton btnEditInJosm = new JButton("Edit in JOSM");
 		btnEditInJosm.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {				
-				Coordinate lC=map.getPosition(1, 1);
-				//corner
-				Coordinate mC=map.getPosition(map.getWidth()-1, map.getHeight()-1);
-				openURL("http://localhost:8111/load_and_zoom?left="+lC.getLon()+"&right="+mC.getLon()+"&top="+lC.getLat()+"&bottom="+mC.getLat());
-					
+			public void actionPerformed(ActionEvent arg0) {
+				if(map.drawStyle.getSelectedChangeset()==null){
+					Coordinate lC=map.getPosition(1, 1);
+					//corner
+					Coordinate mC=map.getPosition(map.getWidth()-1, map.getHeight()-1);
+					openURL("http://localhost:8111/load_and_zoom?left="+lC.getLon()+"&right="+mC.getLon()+"&top="+lC.getLat()+"&bottom="+mC.getLat());
+				}else{
+					Coordinate []p=map.getChangesetCoordinate(map.drawStyle.getSelectedChangeset().id);					
+					openURL("http://localhost:8111/load_and_zoom?left="+p[0].getLon()+"&right="+p[1].getLon()+"&top="+p[0].getLat()+"&bottom="+p[1].getLat());
+				}
 			}
 		});
-		btnEditInJosm.setBounds(12, 188, 149, 24);
+		btnEditInJosm.setBounds(12, 188, 217, 24);
 		panel_3.add(btnEditInJosm);
 		
 		JButton btnAddUser = new JButton("Add to list");
@@ -445,6 +462,15 @@ splitPane.setRightComponent(map);
 		}, 20000, 30000);	
 		
 
+	}
+	
+	private void btSChangeset(){
+		if(map.drawStyle.getSelectedChangeset()==null&&
+				map.drawStyle.getSelectedNode()!=null)
+			btSelectChangeset.setEnabled(true);
+		else{
+			btSelectChangeset.setEnabled(false);
+		}
 	}
 
 	private void initChangeStream() {
@@ -530,6 +556,7 @@ splitPane.setRightComponent(map);
 		btChangeset.setText(Long.toString(node.changesetId));
 		btUser.setText(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(node.changesetId)).userId).name);
 		map.drawStyle.setSelection(node);
+		btSChangeset();
 	}
 
 	public void profileChanged(Profile p) {		

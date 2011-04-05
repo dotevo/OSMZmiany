@@ -144,33 +144,16 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 				changesetid=node.changesetId;					
 		}
 		if(changesetid!=-1){	
-			System.out.println("CHANESET:"+changesetid);
-			Iterator<Long> iterator = dc.nodes.keySet().iterator();
-			if(iterator.hasNext()){
-				Node n=dc.nodes.get(iterator.next());
-				double left=-360;
-				double right=-360;
-				double top=-360;
-				double bottom=-360;
-				while (iterator.hasNext()) {
-					Node node=dc.nodes.get(iterator.next());
-					if(node.changesetId==changesetid){
-						if(left>node.lat||left==-360)left=node.lat;
-    					if(right<node.lat||right==-360)right=node.lat;
-    					if(top<node.lon||top==-360)top=node.lon;
-    					if(bottom>node.lon||bottom==-360)bottom=node.lon;
-					}
-				}
+			Coordinate[] p=getChangesetCoordinate(changesetid);
+			if(p!=null){
 				//Draw changeset box
-				Point p1=this.getMapPosition(left, top,false);
-				Point p2=this.getMapPosition(right, bottom,false);
+				Point p1=this.getMapPosition(p[0].getLat(), p[0].getLon(),false);
+				Point p2=this.getMapPosition(p[1].getLat(), p[1].getLon(),false);
 				if(p1!=null&&p2!=null){
-					System.out.println(p1.x+":"+p1.y+";"+(p2.x-p1.x)+";"+(p2.y-p1.y));
 					g.setColor(new Color(255,0,0,30));
-			    	g.fillRect(p2.x, p2.y,p1.x-p2.x, p1.y-p2.y);
-				}					
+					g.fillRect(p2.x, p2.y,p1.x-p2.x, p1.y-p2.y);
+				}
 			}
-			
 		}
 		g.setColor(Color.BLACK);
 		
@@ -189,6 +172,32 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 			dov.draw(g, this);
 		}}
 	    repaint();
+	}
+	
+	public Coordinate[] getChangesetCoordinate(long changesetid){
+		Iterator<Long> iterator = dc.nodes.keySet().iterator();
+		if(iterator.hasNext()){
+			Node n=dc.nodes.get(iterator.next());
+			double left=-360;
+			double right=-360;
+			double top=-360;
+			double bottom=-360;
+			while (iterator.hasNext()) {
+				Node node=dc.nodes.get(iterator.next());
+				if(node.changesetId==changesetid){
+					if(left>node.lat||left==-360)left=node.lat;
+					if(right<node.lat||right==-360)right=node.lat;
+					if(top<node.lon||top==-360)top=node.lon;
+					if(bottom>node.lon||bottom==-360)bottom=node.lon;
+				}
+			}
+			//Draw changeset box
+			Coordinate[] cor=new Coordinate[2];
+			cor[0]=new Coordinate(left, top);
+			cor[1]=new Coordinate(right, bottom);
+			return cor;					
+		}
+		return null;
 	}
 
 
