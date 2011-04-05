@@ -253,7 +253,7 @@ splitPane.setRightComponent(map);
 		panel_1.add(lblBoxB2);
 		
 		JSeparator separator_1 = new JSeparator();
-		separator_1.setBounds(12, 230, 351, 2);
+		separator_1.setBounds(12, 240, 351, 2);
 		panel_1.add(separator_1);
 		
 		
@@ -268,6 +268,23 @@ splitPane.setRightComponent(map);
 		});
 		btRemoveProfile.setBounds(94, 43, 95, 24);
 		panel_1.add(btRemoveProfile);
+		
+		JButton btnZoomToBox = new JButton("Show Box");
+		btnZoomToBox.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				MapFilter f=conf.getSelectedProfile().getMapFilter();
+				if(f!=null&& f instanceof BoundaryMapFilter){
+					BoundaryMapFilter p=(BoundaryMapFilter) f;
+					double l1=Math.abs(p.lat2-p.lat1);
+					double l2=Math.abs(p.lon2-p.lon1);
+					
+					map.setDisplayPositionByLatLon((p.lat2+p.lat1)/2,(p.lon2+p.lon1)/2, findZoom(l1,l2));
+					
+				}
+			}
+		});
+		btnZoomToBox.setBounds(41, 208, 129, 24);
+		panel_1.add(btnZoomToBox);
 		panel.add(tabbedPane);
 		
 		JPanel panel_2 = new JPanel();
@@ -650,4 +667,15 @@ splitPane.setRightComponent(map);
 	        }
 	        return null;
 	    }
+	 private static int findZoom(double lat,double lon){
+		 int zoom=1;
+		 double p=360;
+		 double d=180;
+		 for(;p>lat&&d>lon;zoom++){
+			 p/=2;
+			 d/=2;
+		 }
+		 
+		return zoom; 
+	 }
 }
