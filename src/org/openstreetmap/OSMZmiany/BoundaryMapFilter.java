@@ -44,8 +44,8 @@ public class BoundaryMapFilter implements MapFilter,DrawerOverlay,Serializable{
 	}
 
 	public void draw(Graphics g, ZMapWidget map) {
-		Point p = map.getMapPosition(lat1,lon1);
-		Point p2 = map.getMapPosition(lat2,lon2);
+		Point p = map.getMapPosition(lat1,lon1,false);
+		Point p2 = map.getMapPosition(lat2,lon2,false);
 		if(p!=null&&p2!=null){
 		  	g.setColor(Color.orange);
 	    	g.drawRect(p.x, p.y,p2.x-p.x, p2.y-p.y);		    
