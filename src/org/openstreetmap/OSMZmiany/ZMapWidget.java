@@ -64,13 +64,14 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    				p.y<arg0.getY()+3&&p.y>arg0.getY()-3){
 	    				for(int i=0;i<zMapWidgetListeners.size();i++){
 	    					zMapWidgetListeners.get(i).nodeClicked(node);
-	    				}	    			
+	    				}
+	    				refrashOverlay();
 	    				return;	    			
 	    			}
 	    		}
 	    	}
 	    }	  
-	    refrashOverlay();
+	    
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
@@ -85,7 +86,8 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 
 	public void mousePressed(MouseEvent arg0) {
 		if(arg0.getButton()==1)
-			c1=getPosition(arg0.getX(), arg0.getY());		
+			c1=getPosition(arg0.getX(), arg0.getY());	
+		refrashOverlay();	
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
@@ -115,6 +117,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 				zMapWidgetListeners.get(i).boxDrawed(c1, c2);
 			}	    				
 		}		
+		refrashOverlay();	
 	}
 
 	public void mapViewChanged() {
