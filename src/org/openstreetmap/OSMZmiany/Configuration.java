@@ -22,8 +22,7 @@ public class Configuration implements Serializable {
 		//-1=ALL;0=created;1=modified;2=deleted
 		private short showType=-1;
 		private String name;
-		private Configuration conf;
-		
+		private Configuration conf;		
 		private MapFilter mapfilter;
 		
 		public Profile(String name){
@@ -100,6 +99,7 @@ public class Configuration implements Serializable {
 	private ArrayList<ConfigurationListener> configurationListeners=new ArrayList<ConfigurationListener>();
 	private Dimension windowSize;
 	private int dividerLocation=400;
+	
 	
 	public Configuration(){
 		//default
@@ -186,7 +186,7 @@ public class Configuration implements Serializable {
 
 	public static Configuration instance;
 	//////////////////////////LOAD AND SAVE SECTION///////////////////////////////
-	private static Configuration loadFromFile(String name) throws IOException, NotSerializableException, ClassNotFoundException{
+	private static Configuration loadFromFile(String name) throws FileNotFoundException,IOException, NotSerializableException, ClassNotFoundException{
 	    ObjectInputStream ois= new ObjectInputStream(new FileInputStream(name));
 	    Configuration c=(Configuration) ois.readObject();
 	    ois.close();
@@ -198,36 +198,40 @@ public class Configuration implements Serializable {
 		try {
 			instance=loadFromFile(".OSMZMIANY_CONFIG");
 			return instance;
+		} catch (FileNotFoundException e) {
+			//Logger.printStackTrace(e,"Configuration load: File not found");
 		} catch (NotSerializableException e) {
-			e.printStackTrace();
+			Logger.printStackTrace(e,"Configuration load: Serializable error");	
 		} catch (IOException e) {
-			e.printStackTrace();
+			try {
+				instance=loadFromFile(".OSMZMIANY_CONFIG");
+				return instance;
+			} catch (Exception e1) {				
+				Logger.printStackTrace(e,"Configuration load: File error");
+			}
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			Logger.printStackTrace(e,"Configuration load: Object error");
 		}
 		//Create default configuration
-		Configuration c=new Configuration();
-		instance =c;
-		return c;
+		instance=new Configuration();
+		return instance;
 	}
 	
-	private void saveToFile(String filename) throws FileNotFoundException, IOException{
+	private void saveToFile(String filename) throws IOException{
 		//Clear listeners		
-		configurationListeners.clear();
-		
+		configurationListeners.clear();		
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename));
         oos.writeObject(this);
         oos.close();
 	}
 	
+		
+	
 	public void saveToFile(){
-		//TODO CROSSPLATFORM HOMEDIR
 		try {
 			saveToFile(".OSMZMIANY_CONFIG");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Logger.printStackTrace(e,"Configuration save: File save error");
 		}
 	}
 	

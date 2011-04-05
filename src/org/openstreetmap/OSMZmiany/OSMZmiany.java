@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.Iterator;
@@ -448,7 +449,8 @@ splitPane.setRightComponent(map);
 
 	private void initChangeStream() {
 		try {
-			BufferedReader br = new BufferedReader(
+			BufferedReader br;
+			br = new BufferedReader(
 					new InputStreamReader(
 							new BufferedInputStream(
 									new URL(
@@ -460,9 +462,11 @@ splitPane.setRightComponent(map);
 					.indexOf("=") + 1));
 			br.readLine();
 			br.close();
-		} catch (IOException ioe) {
-			System.err.println("initChangeStream: Connection error!");
-		}
+			} catch (MalformedURLException e) {
+				System.err.println("BLA");
+			} catch (Exception e) {
+				System.err.println("BLA3");
+			}
 	}
 
 	public void getData() {		
@@ -475,14 +479,17 @@ splitPane.setRightComponent(map);
 			seqNum++;			
 	}
 	
-	public void getData(String url){
+	public void getData(String url){			
 		try {
-			BufferedInputStream bis = new BufferedInputStream(
+			BufferedInputStream bis;
+			bis = new BufferedInputStream(
 					new GZIPInputStream(new URL(url).openStream()));
 			System.out.println("Download: "+url);
 			dc.addData(bis);		
-		} catch (IOException ioe) {
-			System.err.println("getData(): IOExeception");
+		} catch (MalformedURLException e) {
+			System.err.println("");
+		} catch (IOException e) {
+			System.err.println("");
 		}
 	}
 
@@ -509,7 +516,6 @@ splitPane.setRightComponent(map);
            desktop.browse( uri );
        }
        catch ( Exception e ) {
-            System.err.println( e.getMessage() );
        }
     }
 	
@@ -617,5 +623,4 @@ splitPane.setRightComponent(map);
 	        }
 	        return null;
 	    }
-
 }

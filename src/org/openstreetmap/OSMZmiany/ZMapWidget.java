@@ -52,15 +52,17 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	public void mouseClicked(MouseEvent arg0) {
 		Iterator<Long> iterator = dc.nodes.keySet().iterator();
 	    while (iterator.hasNext()) {
-	    	Node node=dc.nodes.get(iterator.next());	    	
-	    	Point p = getMapPosition(node.lat,node.lon);
-	    	if(p!=null){	    		
-	    		if(p.x<arg0.getX()+3&&p.x>arg0.getX()-3&&
-	    		   p.y<arg0.getY()+3&&p.y>arg0.getY()-3){
-	    			for(int i=0;i<zMapWidgetListeners.size();i++){
-	    				zMapWidgetListeners.get(i).nodeClicked(node);
-	    			}	    			
-	    			return;	    			
+	    	Node node=dc.nodes.get(iterator.next());	
+	    	if(this.drawStyle.isVisibleNode(this, node)){
+	    		Point p = getMapPosition(node.lat,node.lon);
+	    		if(p!=null){	    		
+	    			if(p.x<arg0.getX()+3&&p.x>arg0.getX()-3&&
+	    				p.y<arg0.getY()+3&&p.y>arg0.getY()-3){
+	    				for(int i=0;i<zMapWidgetListeners.size();i++){
+	    					zMapWidgetListeners.get(i).nodeClicked(node);
+	    				}	    			
+	    				return;	    			
+	    			}
 	    		}
 	    	}
 	    }	    

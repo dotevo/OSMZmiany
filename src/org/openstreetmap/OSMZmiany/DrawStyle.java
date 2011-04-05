@@ -20,16 +20,21 @@ public class DrawStyle {
 	
 		
 	public void drawNode(Graphics g,ZMapWidget map,Node node) {
+		if(isVisibleNode(map,node))
+			drawNodeP(g,map,node);			
+	}
+	
+	public boolean isVisibleNode(ZMapWidget map,Node node){
 		User user=map.dc.users.get(map.dc.changesets.get(map.dc.changesetsIndex.get(node.changesetId)).userId);
 		Profile p=Configuration.instance.getSelectedProfile();
 		User[] u=p.getUsers();
 		//Blacklist
 		if(p.getListType()==0){
-			drawNodeP(g,map,node);
+			return true;
 		}else if(p.getListType()==2){
 			for(int i=0;i<u.length;i++)
 				if(u[i].id==user.id){
-					drawNodeP(g,map,node);
+					return true;
 				}
 		}else{
 			boolean t=false;
@@ -38,9 +43,12 @@ public class DrawStyle {
 					t=true;
 				}
 			if(!t)
-				drawNodeP(g,map,node);
-		}		
+				return true;
+		}
+		return false;
 	}
+	
+	
 	private void drawNodeP(Graphics g,ZMapWidget map,Node node){
 		switch(node.mode){
 			case 0: {
