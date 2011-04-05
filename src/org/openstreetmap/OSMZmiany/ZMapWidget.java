@@ -29,10 +29,14 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	public DataContainer dc;
 	public DrawStyle drawStyle=new DrawStyle();
 	
+	public long lastRefresh;
+	public long offsetRefresh=30000;
+	
 	private ArrayList<ZMapWidgetListener> zMapWidgetListeners=new ArrayList<ZMapWidgetListener>();
 	
 	public ZMapWidget(DataContainer dc){
 		super();
+		lastRefresh=System.nanoTime();
 		this.dc=dc;
 		dc.addDataContainerListener(this);
 		addChangeListener(this);
@@ -65,7 +69,8 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    			}
 	    		}
 	    	}
-	    }	    
+	    }	  
+	    refrashOverlay();
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
@@ -118,6 +123,10 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	
 	
 	public void refrashOverlay(){
+		if(System.nanoTime()<lastRefresh+offsetRefresh)
+			return;
+		lastRefresh=System.nanoTime();
+		
 		overlayI = new BufferedImage(this.getWidth()+1, this.getHeight()+1, BufferedImage.TYPE_INT_ARGB);		
 		Graphics g = overlayI.getGraphics();
 		
