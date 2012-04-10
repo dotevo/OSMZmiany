@@ -497,7 +497,7 @@ splitPane.setRightComponent(map);
 					new InputStreamReader(
 							new BufferedInputStream(
 									new URL(
-											"http://planet.openstreetmap.org/minute-replicate/state.txt")
+											"http://planet.openstreetmap.org/redaction-period/minute-replicate/state.txt")
 											.openStream())));
 			br.readLine();
 			String seqNumStr = br.readLine();
@@ -514,7 +514,7 @@ splitPane.setRightComponent(map);
 
 	public void getData() {		
 			DecimalFormat myFormat = new DecimalFormat("000");
-			String url = "http://planet.openstreetmap.org/minute-replicate/"
+			String url = "http://planet.openstreetmap.org/redaction-period/minute-replicate/"
 					+ myFormat.format(seqNum / 1000000) + "/"
 					+ myFormat.format((seqNum / 1000) % 1000) + "/"
 					+ myFormat.format(seqNum % 1000) + ".osc.gz";			
