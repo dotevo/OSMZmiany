@@ -59,6 +59,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	
 	private Timer refetchTimer;
 	private int seqNum;
+	private int firstSeq = Integer.MAX_VALUE;
 		
 	public DataContainer dc;
 	private Configuration conf;
@@ -188,6 +189,41 @@ splitPane.setRightComponent(map);
 		});
 		
 		panel_1.add(cbxLiveEdit);
+		
+		final JLabel postep = new JLabel("0/0");
+		postep.setBounds(12, 398, 159, 22);
+		panel_1.add(postep);
+		
+		final JButton btnGetLast = new JButton("Get 6h more");
+		btnGetLast.setBounds(12, 358, 159, 22);
+		btnGetLast.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				if(firstSeq == Integer.MAX_VALUE){
+					initChangeStream();
+				}
+				
+				Thread t=new Thread(){
+					public void run(){
+						final int values=60*6;
+						int sq = firstSeq;
+						btnGetLast.setEnabled(false);
+						while(firstSeq - sq < values  && sq > 0){
+							getData(sq);
+							sq--;
+							postep.setText(""+(firstSeq-sq) +"/" +values);
+						}
+						postep.setText("Complete");
+						firstSeq=sq;
+						btnGetLast.setEnabled(true);
+					}
+				};
+				t.start();
+					
+			}
+		});
+		
+		
+		panel_1.add(btnGetLast);
 		
 		
 		JButton btnClear = new JButton("Clear");
@@ -399,7 +435,7 @@ splitPane.setRightComponent(map);
 			public void actionPerformed(ActionEvent arg0) {
 				Node n=map.drawStyle.getSelectedNode();
 				if(n!=null){
-					map.drawStyle.setSelection(dc.changesets.get(dc.changesetsIndex.get(n.changesetId)));
+					map.drawStyle.setSelection(dc.getChangesets().get(dc.getChangesetsIndex().get(n.changesetId)));
 					map.refrashOverlay();
 				}
 				btSChangeset();				
@@ -451,9 +487,9 @@ splitPane.setRightComponent(map);
 		btnAddUser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(map.drawStyle.getSelectedNode()!=null){
-					conf.getSelectedProfile().addUser(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(map.drawStyle.getSelectedNode().changesetId)).userId));
+					conf.getSelectedProfile().addUser(dc.getUsers().get(dc.getChangesets().get(dc.getChangesetsIndex().get(map.drawStyle.getSelectedNode().changesetId)).userId));
 				}else if(map.drawStyle.getSelectedChangeset()!=null){
-					conf.getSelectedProfile().addUser(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(map.drawStyle.getSelectedChangeset().id)).userId));
+					conf.getSelectedProfile().addUser(dc.getUsers().get(dc.getChangesets().get(dc.getChangesetsIndex().get(map.drawStyle.getSelectedChangeset().id)).userId));
 				}
 				reloadUsersList();
 				map.refrashOverlay();
@@ -502,8 +538,14 @@ splitPane.setRightComponent(map);
 											.openStream())));
 			br.readLine();
 			String seqNumStr = br.readLine();
+			
 			seqNum = Integer.parseInt(seqNumStr.substring(seqNumStr
 					.indexOf("=") + 1));
+			
+			if(seqNum < firstSeq){
+				firstSeq = seqNum;
+			}
+			
 			br.readLine();
 			br.close();
 			} catch (MalformedURLException e) {
@@ -514,14 +556,18 @@ splitPane.setRightComponent(map);
 	}
 
 	public void getData() {		
-			DecimalFormat myFormat = new DecimalFormat("000");
-			String url = "http://planet.openstreetmap.org/redaction-period/minute-replicate/"
-					+ myFormat.format(seqNum / 1000000) + "/"
-					+ myFormat.format((seqNum / 1000) % 1000) + "/"
-					+ myFormat.format(seqNum % 1000) + ".osc.gz";			
-			getData(url);
+			getData(seqNum);
 			seqNum++;			
 	}
+	
+	public void getData(int seqNum) {		
+		DecimalFormat myFormat = new DecimalFormat("000");
+		String url = "http://planet.openstreetmap.org/redaction-period/minute-replicate/"
+				+ myFormat.format(seqNum / 1000000) + "/"
+				+ myFormat.format((seqNum / 1000) % 1000) + "/"
+				+ myFormat.format(seqNum % 1000) + ".osc.gz";			
+		getData(url);		
+}
 	
 	public void getData(String url){			
 		try {
@@ -540,10 +586,10 @@ splitPane.setRightComponent(map);
 
 	public void reloadChangesets(){
 		model.clear();
-		Iterator<Changeset> iterator = dc.changesets.iterator();
+		Iterator<Changeset> iterator = dc.getChangesets().iterator();
 	    while (iterator.hasNext()) {
 	    	Changeset ch=iterator.next();
-	    	model.add(0, ch.id+":"+dc.users.get(ch.userId).name);  	
+	    	model.add(0, ch.id+":"+dc.getUsers().get(ch.userId).name);  	
 	    }
 	}
 				
@@ -572,7 +618,7 @@ splitPane.setRightComponent(map);
 	public void nodeClicked(Node node) {
 		btNode.setText(Long.toString(node.id));
 		btChangeset.setText(Long.toString(node.changesetId));
-		btUser.setText(dc.users.get(dc.changesets.get(dc.changesetsIndex.get(node.changesetId)).userId).name);
+		btUser.setText(dc.getUsers().get(dc.getChangesets().get(dc.getChangesetsIndex().get(node.changesetId)).userId).name);
 		map.drawStyle.setSelection(node);
 		btSChangeset();
 	}

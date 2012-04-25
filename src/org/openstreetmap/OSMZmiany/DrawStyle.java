@@ -25,7 +25,7 @@ public class DrawStyle {
 	}
 	
 	public boolean isVisibleNode(ZMapWidget map,Node node){
-		User user=map.dc.users.get(map.dc.changesets.get(map.dc.changesetsIndex.get(node.changesetId)).userId);
+		User user=map.dc.getUsers().get(map.dc.getChangesets().get(map.dc.getChangesetsIndex().get(node.changesetId)).userId);
 		Profile p=Configuration.instance.getSelectedProfile();
 		User[] u=p.getUsers();
 		//Blacklist

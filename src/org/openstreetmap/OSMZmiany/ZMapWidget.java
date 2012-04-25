@@ -54,9 +54,9 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	}
 
 	public void mouseClicked(MouseEvent arg0) {
-		Iterator<Long> iterator = dc.nodes.keySet().iterator();
+		Iterator<Long> iterator = dc.getNodes().keySet().iterator();
 	    while (iterator.hasNext()) {
-	    	Node node=dc.nodes.get(iterator.next());	
+	    	Node node=dc.getNodes().get(iterator.next());	
 	    	if(this.drawStyle.isVisibleNode(this, node)){
 	    		Point p = getMapPosition(node.lat,node.lon);
 	    		if(p!=null){	    		
@@ -158,11 +158,12 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 		g.setColor(Color.BLACK);
 		
 		if(drawStyle!=null){
-			Iterator<Long> iterator = dc.nodes.keySet().iterator();
+			synchronized(dc.getNodes()){
+			Iterator<Long> iterator = dc.getNodes().keySet().iterator();
 	    	while (iterator.hasNext()) {
-	    		Node node=dc.nodes.get(iterator.next());
+	    		Node node=dc.getNodes().get(iterator.next());
 	    		drawStyle.drawNode(g,this, node);	    	
-	    	}
+	    	}}
 		}
 		Profile p=Configuration.instance.getSelectedProfile();
 		if(p!=null){
@@ -175,15 +176,15 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	}
 	
 	public Coordinate[] getChangesetCoordinate(long changesetid){
-		Iterator<Long> iterator = dc.nodes.keySet().iterator();
+		Iterator<Long> iterator = dc.getNodes().keySet().iterator();
 		if(iterator.hasNext()){
-			Node n=dc.nodes.get(iterator.next());
+			Node n=dc.getNodes().get(iterator.next());
 			double left=-360;
 			double right=-360;
 			double top=-360;
 			double bottom=-360;
 			while (iterator.hasNext()) {
-				Node node=dc.nodes.get(iterator.next());
+				Node node=dc.getNodes().get(iterator.next());
 				if(node.changesetId==changesetid){
 					if(left>node.lat||left==-360)left=node.lat;
 					if(right<node.lat||right==-360)right=node.lat;
