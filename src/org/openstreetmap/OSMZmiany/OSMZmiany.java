@@ -180,6 +180,7 @@ splitPane.setRightComponent(map);
 		
 		cbxLiveEdit = new JCheckBox("Live edit diff");
 		cbxLiveEdit.setBounds(12, 308, 159, 22);
+		cbxLiveEdit.setSelected(true);
 		cbxLiveEdit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				getData();	
