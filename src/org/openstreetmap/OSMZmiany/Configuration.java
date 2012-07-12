@@ -1,6 +1,7 @@
 package org.openstreetmap.OSMZmiany;
 
 import java.awt.Dimension;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -205,7 +206,7 @@ public class Configuration implements Serializable {
 	public static Configuration loadFromFile(){
 		//TODO CROSSPLATFORM HOMEDIR
 		try {
-			instance=loadFromFile(".OSMZMIANY_CONFIG");
+			instance=loadFromFile(System.getProperty("user.home") + File.separator + ".OSMZMIANY_CONFIG");
 			return instance;
 		} catch (FileNotFoundException e) {
 			//Logger.printStackTrace(e,"Configuration load: File not found");
@@ -213,7 +214,7 @@ public class Configuration implements Serializable {
 			Logger.printStackTrace(e,"Configuration load: Serializable error");	
 		} catch (IOException e) {
 			try {
-				instance=loadFromFile(".OSMZMIANY_CONFIG");
+				instance=loadFromFile(System.getProperty("user.home") + File.separator + ".OSMZMIANY_CONFIG");
 				return instance;
 			} catch (Exception e1) {				
 				Logger.printStackTrace(e,"Configuration load: File error");
@@ -238,7 +239,7 @@ public class Configuration implements Serializable {
 	
 	public void saveToFile(){
 		try {
-			saveToFile(".OSMZMIANY_CONFIG");
+			saveToFile(System.getProperty("user.home") + File.separator + ".OSMZMIANY_CONFIG");
 		} catch (IOException e) {
 			Logger.printStackTrace(e,"Configuration save: File save error");
 		}
