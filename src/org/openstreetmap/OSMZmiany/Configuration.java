@@ -99,6 +99,7 @@ public class Configuration implements Serializable {
 	private ArrayList<ConfigurationListener> configurationListeners=new ArrayList<ConfigurationListener>();
 	private Dimension windowSize;
 	private int dividerLocation=400;
+	private String diffBaseUrl = "http://planet.openstreetmap.org/redaction-period/";
 	
 	
 	public Configuration(){
@@ -121,6 +122,14 @@ public class Configuration implements Serializable {
 	}
 	public void setWindowSize(Dimension m){
 		windowSize=m;
+	}
+	
+	public String getDiffBaseUrl() {
+		return diffBaseUrl;
+	}
+	
+	public void setDiffBaseURL(String diffBaseUrl) {
+		this.diffBaseUrl = diffBaseUrl;
 	}
 	
 	public void addProfile(Profile profile){

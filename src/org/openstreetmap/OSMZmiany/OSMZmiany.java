@@ -66,6 +66,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	
 	//Widgets
 	private ZMapWidget map;
+	private JTextField tfBaseUrl;
 	private JTextField tfURL;
 	private JCheckBox cbxLiveEdit;
 	private JList list;
@@ -161,17 +162,33 @@ splitPane.setRightComponent(map);
 		lblData.setBounds(12, 244, 39, 14);
 		panel_1.add(lblData);
 		
-		JLabel lblDiffUrl = new JLabel("Diff URL");
-		lblDiffUrl.setBounds(12, 270, 55, 14);
+		JLabel lblBaseUrl = new JLabel("Base URL");
+		tfBaseUrl = new JTextField();
+		JButton btnBaseUrl = new JButton("Set");
+		tfBaseUrl.setText(conf.getDiffBaseUrl());
+		lblBaseUrl.setBounds(12, 270, 70, 14);
+		tfBaseUrl.setBounds(94, 270, 199, 24);
+		btnBaseUrl.setBounds(222, 295, 71, 24);
+		btnBaseUrl.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				conf.setDiffBaseURL(tfBaseUrl.getText());
+			}
+		});
+		panel_1.add(lblBaseUrl);
+		panel_1.add(tfBaseUrl);
+		panel_1.add(btnBaseUrl);
+		
+		JLabel lblDiffUrl = new JLabel("OSC URL");
+		lblDiffUrl.setBounds(12, 323, 70, 14);
 		panel_1.add(lblDiffUrl);
 		
 		tfURL = new JTextField();
-		tfURL.setBounds(94, 270, 199, 24);
+		tfURL.setBounds(94, 323, 199, 24);
 		panel_1.add(tfURL);
 		tfURL.setColumns(10);
 		
 		JButton btnLoad = new JButton("Load");
-		btnLoad.setBounds(224, 307, 69, 24);
+		btnLoad.setBounds(222, 349, 71, 24);
 		btnLoad.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				getData(tfURL.getText());
@@ -180,7 +197,7 @@ splitPane.setRightComponent(map);
 		panel_1.add(btnLoad);
 		
 		cbxLiveEdit = new JCheckBox("Live edit diff");
-		cbxLiveEdit.setBounds(12, 308, 159, 22);
+		cbxLiveEdit.setBounds(12, 349, 159, 22);
 		cbxLiveEdit.setSelected(true);
 		cbxLiveEdit.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
@@ -191,11 +208,11 @@ splitPane.setRightComponent(map);
 		panel_1.add(cbxLiveEdit);
 		
 		final JLabel postep = new JLabel("0/0");
-		postep.setBounds(12, 398, 159, 22);
+		postep.setBounds(12, 423, 159, 22);
 		panel_1.add(postep);
 		
 		final JButton btnGetLast = new JButton("Get 6h more");
-		btnGetLast.setBounds(12, 358, 159, 22);
+		btnGetLast.setBounds(12, 400, 159, 22);
 		btnGetLast.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(firstSeq == Integer.MAX_VALUE){
@@ -227,7 +244,7 @@ splitPane.setRightComponent(map);
 		
 		
 		JButton btnClear = new JButton("Clear");
-		btnClear.setBounds(222, 343, 71, 24);
+		btnClear.setBounds(222, 376, 71, 24);
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				dc.clear();	
@@ -534,7 +551,7 @@ splitPane.setRightComponent(map);
 					new InputStreamReader(
 							new BufferedInputStream(
 									new URL(
-											"http://planet.openstreetmap.org/redaction-period/minute-replicate/state.txt")
+											conf.getDiffBaseUrl() + "minute-replicate/state.txt")
 											.openStream())));
 			br.readLine();
 			String seqNumStr = br.readLine();
@@ -549,9 +566,9 @@ splitPane.setRightComponent(map);
 			br.readLine();
 			br.close();
 			} catch (MalformedURLException e) {
-				System.err.println("BLA");
+				e.printStackTrace();
 			} catch (Exception e) {
-				System.err.println("BLA3");
+				e.printStackTrace();
 			}
 	}
 
@@ -562,7 +579,7 @@ splitPane.setRightComponent(map);
 	
 	public void getData(int seqNum) {		
 		DecimalFormat myFormat = new DecimalFormat("000");
-		String url = "http://planet.openstreetmap.org/redaction-period/minute-replicate/"
+		String url = conf.getDiffBaseUrl() + "minute-replicate/"
 				+ myFormat.format(seqNum / 1000000) + "/"
 				+ myFormat.format((seqNum / 1000) % 1000) + "/"
 				+ myFormat.format(seqNum % 1000) + ".osc.gz";			
