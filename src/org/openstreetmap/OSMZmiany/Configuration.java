@@ -100,7 +100,7 @@ public class Configuration implements Serializable {
 	private ArrayList<ConfigurationListener> configurationListeners=new ArrayList<ConfigurationListener>();
 	private Dimension windowSize;
 	private int dividerLocation=400;
-	private String diffBaseUrl = "http://planet.openstreetmap.org/redaction-period/";
+	private String diffBaseUrl = "http://planet.openstreetmap.org/redaction-period/minute-replicate/";
 	
 	
 	public Configuration(){

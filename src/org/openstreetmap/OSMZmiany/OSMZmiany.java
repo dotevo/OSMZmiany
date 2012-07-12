@@ -172,6 +172,7 @@ splitPane.setRightComponent(map);
 		btnBaseUrl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				conf.setDiffBaseURL(tfBaseUrl.getText());
+				firstSeq = Integer.MAX_VALUE;
 			}
 		});
 		panel_1.add(lblBaseUrl);
@@ -551,7 +552,7 @@ splitPane.setRightComponent(map);
 					new InputStreamReader(
 							new BufferedInputStream(
 									new URL(
-											conf.getDiffBaseUrl() + "minute-replicate/state.txt")
+											conf.getDiffBaseUrl() + "state.txt")
 											.openStream())));
 			br.readLine();
 			String seqNumStr = br.readLine();
@@ -579,7 +580,7 @@ splitPane.setRightComponent(map);
 	
 	public void getData(int seqNum) {		
 		DecimalFormat myFormat = new DecimalFormat("000");
-		String url = conf.getDiffBaseUrl() + "minute-replicate/"
+		String url = conf.getDiffBaseUrl()
 				+ myFormat.format(seqNum / 1000000) + "/"
 				+ myFormat.format((seqNum / 1000) % 1000) + "/"
 				+ myFormat.format(seqNum % 1000) + ".osc.gz";			
