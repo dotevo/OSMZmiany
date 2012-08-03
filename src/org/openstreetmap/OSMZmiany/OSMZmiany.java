@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -61,6 +62,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	private ZMapWidget map;
 	private JTextField tfBaseUrl;
 	private JTextField tfURL;
+	private JTextField tfKeepHours;
 	private JCheckBox cbxLiveEdit;
 	private JList list;
 	private JComboBox cbProfiles;
@@ -202,11 +204,11 @@ splitPane.setRightComponent(map);
 		panel_1.add(cbxLiveEdit);
 		
 		final JLabel postep = new JLabel("0/0");
-		postep.setBounds(12, 423, 159, 22);
+		postep.setBounds(12, 430, 159, 22);
 		panel_1.add(postep);
 		
 		final JButton btnGetLast = new JButton("Get 6h more");
-		btnGetLast.setBounds(12, 400, 159, 22);
+		btnGetLast.setBounds(12, 410, 159, 22);
 		btnGetLast.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(firstSeq == Integer.MAX_VALUE){
@@ -238,15 +240,31 @@ splitPane.setRightComponent(map);
 		
 		
 		JButton btnClear = new JButton("Clear");
-		btnClear.setBounds(222, 376, 71, 24);
+		btnClear.setBounds(12, 380, 71, 24);
 		btnClear.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				dc.clear();	
+				//TODO: handle bad input
+				Integer hours = Integer.parseInt(tfKeepHours.getText());
+				if(hours == 0) {
+					dc.clearAll();
+				}
+				else {
+					long clearTo = new Date().getTime() - (hours * 3600000);
+					dc.clearToTime(clearTo);
+				}
 			}
 		});
-		
-		
+
 		panel_1.add(btnClear);
+		
+		JLabel clearLabel = new JLabel("keep hours:");
+		clearLabel.setBounds(90, 380, 95, 24);
+		panel_1.add(clearLabel);
+		
+		tfKeepHours = new JTextField();
+		tfKeepHours.setText("1");
+		tfKeepHours.setBounds(190, 380, 50, 24);
+		panel_1.add(tfKeepHours);
 		
 		JButton btAddProfile = new JButton("Add");
 		btAddProfile.addActionListener(new ActionListener() {

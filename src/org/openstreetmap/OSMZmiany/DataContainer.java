@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -89,8 +90,14 @@ public class DataContainer extends DefaultHandler{
 			e.printStackTrace();
 			System.exit(10);
 		}
-		for(int j=0;j<datacontainerListener.size();j++)
-			datacontainerListener.get(j).dataChanged();
+		notifyListeners();
+	}
+	
+	private void notifyListeners() {
+		System.out.println("nodes in memory: " + nodes.size());
+		for (DataContainerListener listener : datacontainerListener) {
+			listener.dataChanged();
+		}
 	}
 	
 	synchronized public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
@@ -191,7 +198,7 @@ public class DataContainer extends DefaultHandler{
 	}
 
 
-	synchronized public void clear() {
+	synchronized public void clearAll() {
 		this.getChangesets().clear();
 		this.getNodes().clear();
 		this.getWays().clear();
@@ -199,6 +206,27 @@ public class DataContainer extends DefaultHandler{
 		this.getChangesetsIndex().clear();
 		for(int j=0;j<datacontainerListener.size();j++)
 			datacontainerListener.get(j).dataChanged();
+	}
+	
+	/**
+	 * Clear nodes back to a given point in time. Node time is determined by the changeset, not the node itself.
+	 * Note that this does not touch ways/changesets/users. These don't affect rendering speed and have smaller memory footprint.
+	 * @param time - Anything older than this time is cleared
+	 */
+	public void clearToTime(long time) {
+		Set<Long> keys = nodes.keySet();
+		int clearedNodeCount = 0;
+		for (Long key : keys) {
+			Node node = nodes.get(key);
+			int changeSetIndex = changesetsIndex.get(node.changesetId);
+			Changeset changeset = changesets.get(changeSetIndex);
+			if(changeset.time < time) {
+				nodes.remove(key);
+				clearedNodeCount++;
+			}
+		}
+		System.out.println("cleared old nodes " + clearedNodeCount);
+		notifyListeners();
 	}
 	
 	public void addDataContainerListener(DataContainerListener dcl){
