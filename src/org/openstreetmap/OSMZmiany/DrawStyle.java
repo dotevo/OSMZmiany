@@ -10,7 +10,6 @@ import org.openstreetmap.OSMZmiany.DataContainer.Node;
 
 public class DrawStyle {
 	
-	private static final long serialVersionUID = 383857840267103977L;
 	private Changeset selCh;
 	private Node selNode;
 	

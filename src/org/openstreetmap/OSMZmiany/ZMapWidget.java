@@ -177,8 +177,9 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	
 	public Coordinate[] getChangesetCoordinate(long changesetid){
 		Iterator<Long> iterator = dc.getNodes().keySet().iterator();
+
 		if(iterator.hasNext()){
-			Node n=dc.getNodes().get(iterator.next());
+			//Node n=dc.getNodes().get(iterator.next());
 			double left=-360;
 			double right=-360;
 			double top=-360;

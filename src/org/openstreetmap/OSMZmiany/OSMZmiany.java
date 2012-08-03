@@ -4,10 +4,8 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
@@ -24,11 +22,9 @@ import org.openstreetmap.OSMZmiany.Configuration.Profile;
 import org.openstreetmap.OSMZmiany.DataContainer.Changeset;
 import org.openstreetmap.OSMZmiany.DataContainer.Node;
 import org.openstreetmap.gui.jmapviewer.Coordinate;
-import org.openstreetmap.gui.jmapviewer.interfaces.MapRectangle;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.ComboBoxModel;
 import javax.swing.JOptionPane;
 import javax.swing.JSplitPane;
 import javax.swing.JPanel;
@@ -48,9 +44,6 @@ import javax.swing.SwingConstants;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
 import javax.swing.JScrollPane;
-import java.awt.GridLayout;
-import java.awt.BorderLayout;
-import java.awt.CardLayout;
 
 public class OSMZmiany extends JFrame implements ZMapWidgetListener,ConfigurationListener {
 	private static final long serialVersionUID = -2976479683829295126L;	
