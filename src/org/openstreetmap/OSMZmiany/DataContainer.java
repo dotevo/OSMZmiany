@@ -3,11 +3,11 @@ package org.openstreetmap.OSMZmiany;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -53,14 +53,14 @@ public class DataContainer extends DefaultHandler{
 	
 	
 	
-	private Map<Long,Node> nodes= Collections.synchronizedMap(new HashMap<Long,Node>());
-	private Map<Long,Way> ways=Collections.synchronizedMap(new HashMap<Long,Way>());
-	private Map<Long,User> users=Collections.synchronizedMap(new HashMap<Long,User>());
+	private Map<Long,Node> nodes = new ConcurrentHashMap<Long,Node>();
+	private Map<Long,Way> ways = new ConcurrentHashMap<Long,Way>();
+	private Map<Long,User> users = new HashMap<Long,User>();
 	
-	private Map<Long,Integer> changesetsIndex=Collections.synchronizedMap(new HashMap<Long,Integer>());
-	private Vector <Changeset> changesets=new Vector <Changeset>();
+	private Map<Long,Integer> changesetsIndex = new ConcurrentHashMap<Long,Integer>();
+	private Vector <Changeset> changesets = new Vector <Changeset>();
 
-	private ArrayList<DataContainerListener> datacontainerListener=new ArrayList<DataContainerListener>();
+	private ArrayList<DataContainerListener> datacontainerListener = new ArrayList<DataContainerListener>();
 	
 	
 	
