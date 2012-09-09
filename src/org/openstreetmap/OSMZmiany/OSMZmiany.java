@@ -141,7 +141,7 @@ splitPane.setRightComponent(map);
 		btnRemoveBox.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				conf.getSelectedProfile().setMapFilter(null);
-				map.refrashOverlay();
+				map.refrashOverlay(true);
 			}
 		});
 		panel_1.setLayout(null);
@@ -384,7 +384,7 @@ splitPane.setRightComponent(map);
 			public void itemStateChanged(ItemEvent arg0) {
 				conf.getSelectedProfile().setListType((short)usersListType.getSelectedIndex());
 				reloadUsersList();
-				map.refrashOverlay();
+				map.refrashOverlay(true);
 			}
 		});
 		usersListType.setModel(new DefaultComboBoxModel(new String[] {"None","Whitelist","Blacklist"}));
@@ -397,7 +397,7 @@ splitPane.setRightComponent(map);
 				if(i<us.length&&i>=0){
 					conf.getSelectedProfile().removeUser(us[i]);
 					reloadUsersList();
-					map.refrashOverlay();
+					map.refrashOverlay(true);
 				}
 			}
 		});
@@ -465,7 +465,7 @@ splitPane.setRightComponent(map);
 				Node n=map.drawStyle.getSelectedNode();
 				if(n!=null){
 					map.drawStyle.setSelection(dc.getChangesets().get(dc.getChangesetsIndex().get(n.changesetId)));
-					map.refrashOverlay();
+					map.refrashOverlay(true);
 				}
 				btSChangeset();				
 			}
@@ -521,7 +521,7 @@ splitPane.setRightComponent(map);
 					conf.getSelectedProfile().addUser(dc.getUsers().get(dc.getChangesets().get(dc.getChangesetsIndex().get(map.drawStyle.getSelectedChangeset().id)).userId));
 				}
 				reloadUsersList();
-				map.refrashOverlay();
+				map.refrashOverlay(true);
 			}
 		});
 		
@@ -654,7 +654,7 @@ splitPane.setRightComponent(map);
 
 	public void profileChanged(Profile p) {		
 		this.reloadUsersList();	
-		map.refrashOverlay();
+		map.refrashOverlay(true);
 	}
 	
 	public void reloadProfiles(){
@@ -716,7 +716,7 @@ splitPane.setRightComponent(map);
 		MapFilter mf=new BoundaryMapFilter(c1.getLat(),c1.getLon(),c2.getLat(),c2.getLon());
 		dc.removeData(mf);		
 		conf.getSelectedProfile().setMapFilter(mf);
-		map.refrashOverlay();
+		map.refrashOverlay(true);
 		setBox=false;
 		}
 	}

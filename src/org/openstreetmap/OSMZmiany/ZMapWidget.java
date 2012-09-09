@@ -29,14 +29,13 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	public DataContainer dc;
 	public DrawStyle drawStyle=new DrawStyle();
 	
-	public long lastRefresh;
-	public long offsetRefresh=30000;
+	public long lastRefresh = 0;
+	public long offsetRefresh=500;
 	
 	private ArrayList<ZMapWidgetListener> zMapWidgetListeners=new ArrayList<ZMapWidgetListener>();
 	
 	public ZMapWidget(DataContainer dc){
 		super();
-		lastRefresh=System.nanoTime();
 		this.dc=dc;
 		dc.addDataContainerListener(this);
 		addChangeListener(this);
@@ -65,7 +64,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	    				for(int i=0;i<zMapWidgetListeners.size();i++){
 	    					zMapWidgetListeners.get(i).nodeClicked(node);
 	    				}
-	    				refrashOverlay();
+	    				refrashOverlay(true);
 	    				return;	    			
 	    			}
 	    		}
@@ -87,7 +86,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 	public void mousePressed(MouseEvent arg0) {
 		if(arg0.getButton()==1)
 			c1=getPosition(arg0.getX(), arg0.getY());	
-		refrashOverlay();	
+		refrashOverlay(true);	
 	}
 
 	public void mouseReleased(MouseEvent arg0) {
@@ -117,18 +116,19 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 				zMapWidgetListeners.get(i).boxDrawed(c1, c2);
 			}	    				
 		}		
-		refrashOverlay();	
+		refrashOverlay(true);	
 	}
 
 	public void mapViewChanged() {
-		refrashOverlay();		
+		refrashOverlay(false);		
 	}
 	
 	
-	public void refrashOverlay(){
-		if(System.nanoTime()<lastRefresh+offsetRefresh)
+	public void refrashOverlay(boolean forceRefresh){
+		
+		if(System.currentTimeMillis()<lastRefresh+offsetRefresh && !forceRefresh)
 			return;
-		lastRefresh=System.nanoTime();
+		lastRefresh=System.currentTimeMillis();
 		
 		overlayI = new BufferedImage(this.getWidth()+1, this.getHeight()+1, BufferedImage.TYPE_INT_ARGB);		
 		Graphics g = overlayI.getGraphics();
@@ -204,7 +204,7 @@ public class ZMapWidget extends JMapViewer implements MapViewChangeListener, Mou
 
 
 	public void dataChanged() {
-		refrashOverlay();		
+		refrashOverlay(true);		
 	}
 	
 		
