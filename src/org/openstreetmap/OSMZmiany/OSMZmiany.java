@@ -60,6 +60,7 @@ public class OSMZmiany extends JFrame implements ZMapWidgetListener,Configuratio
 	
 	//Widgets
 	private ZMapWidget map;
+	private JTabbedPane tabbedPane;
 	private JTextField tfBaseUrl;
 	private JTextField tfURL;
 	private JTextField tfKeepHours;
@@ -123,7 +124,7 @@ splitPane.setRightComponent(map);
 		splitPane.setDividerLocation(conf.getDividerLocation());
 		panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 		
-		JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		
 		JPanel panel_1 = new JPanel();
 		tabbedPane.addTab("General", null, panel_1, null);
@@ -648,6 +649,7 @@ splitPane.setRightComponent(map);
 		btNode.setText(Long.toString(node.id));
 		btChangeset.setText(Long.toString(node.changesetId));
 		btUser.setText(dc.getUsers().get(dc.getChangesets().get(dc.getChangesetsIndex().get(node.changesetId)).userId).name);
+		this.tabbedPane.setSelectedIndex(3);
 		map.drawStyle.setSelection(node);
 		btSChangeset();
 	}
