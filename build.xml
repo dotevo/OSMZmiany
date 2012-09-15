@@ -5,7 +5,56 @@
 	<property name="src.osmo" value="${basedir}/src_externals/osmosis" />
 
 	<property name="dist.dir" value="${basedir}/dist" />
-	<property name="version" value="0.0.3" />
+	<property file="build_info.properties"/>
+	<property name="build.number" value="${build.major.number}.${build.minor.number}.${build.revision.number}"/>
+
+	<target name="current-number">
+	 <echo>Current build number:${build.number}</echo>
+	</target>
+
+	<target name="compile">
+	   <antcall target="revision"></antcall>
+		<javac srcdir="${src.dir}:${src.jmv}:${src.osmo}" destdir="bin" debug="on" optimize="on" deprecation="on" target="1.5" encoding="UTF8" includeantruntime="false">
+			<classpath>
+				<path refid="main.classpath" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="dist">
+	  <antcall target="minor"></antcall>
+	  <antcall target="deploy"></antcall>
+	</target>
+	
+	<target name="revision">
+	    <propertyfile  file="build_info.properties">
+	            <entry key="build.revision.number" type="int" operation="+" value="1" pattern="0"/>
+	    </propertyfile>
+	</target>
+
+	<target name="minor">
+	    <propertyfile  file="build_info.properties">
+	            <entry key="build.minor.number" type="int" operation="+" value="1" pattern="0"/>
+	            <entry key="build.revision.number" type="int" value="0" pattern="0"/>
+	    </propertyfile>
+	</target>
+
+	<target name="major">
+	    <propertyfile  file="build_info.properties">
+	            <entry key="build.major.number" type="int" operation="+" value="1" pattern="0"/>
+	            <entry key="build.minor.number" type="int" value="0" pattern="0"/>
+	            <entry key="build.revision.number" type="int" value="0" pattern="0"/>
+	    </propertyfile>
+	</target>
+
+	<target name="all">
+	    <propertyfile  file="build_info.properties">
+	            <entry key="build.major.number" type="int" operation="+" value="1" pattern="0"/>
+	            <entry key="build.minor.number" type="int" operation="+" value="1" pattern="0"/>
+	            <entry key="build.revision.number" type="int" operation="+" value="1" pattern="00"/>
+	    </propertyfile>
+	</target>
+	
 
 	<path id="main.classpath">
 		<pathelement location="${classes.dir}" />
@@ -23,28 +72,21 @@
 		<delete dir="${dist.dir}" />
 	</target>
 
-	<target name="compile" depends="prepare">
-		<javac srcdir="${src.dir}:${src.jmv}:${src.osmo}" destdir="bin" debug="on" optimize="on" deprecation="on" target="1.5" encoding="UTF8" includeantruntime="false">
-			<classpath>
-				<path refid="main.classpath" />
-			</classpath>
-		</javac>
-	</target>
-
 	<target name="deploy" depends="compile">
-		<jar jarfile="${dist.dir}/${ant.project.name}-${version}.jar">
+		<jar jarfile="${dist.dir}/${ant.project.name}-${build.number}.jar">
 			<manifest>
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Main-Class" value="org.openstreetmap.OSMZmiany.OSMZmiany" />
 				<section name="${ant.project.name}">
 					<attribute name="Implementation-Title" value="OSMZmiany" />
-					<attribute name="Implementation-Version" value="${version} ${TODAY_DE}" />
+					<attribute name="Implementation-Version" value="${build.number} ${TODAY_DE}" />
 				</section>
 			</manifest>
 			<fileset dir="bin">
 				<include name="**/*.class" />
 			</fileset>
-		</jar>
+		</jar>		
 	</target>
+	
 </project>
 
