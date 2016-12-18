@@ -222,9 +222,15 @@ splitPane.setRightComponent(map);
 						int sq = firstSeq;
 						btnGetLast.setEnabled(false);
 						while(firstSeq - sq < values  && sq > 0){
-							getData(sq);
-							sq--;
-							postep.setText(""+(firstSeq-sq) +"/" +values);
+							if(getData(sq)) {
+								sq--;
+								postep.setText(""+(firstSeq-sq) +"/" +values);
+							} else{
+								try {
+									Thread.sleep(5000);
+								catch (InterruptedException e) {}
+								}
+							}
 						}
 						postep.setText("Complete");
 						firstSeq=sq;
@@ -557,27 +563,16 @@ splitPane.setRightComponent(map);
 		}
 	}
 
-	private void initChangeStream() {
-		try {
-			BufferedReader br;
-			br = new BufferedReader(
-					new InputStreamReader(
-							new BufferedInputStream(
-									new URL(
-											conf.getDiffBaseUrl() + "state.txt")
-											.openStream())));
-			br.readLine();
-			String seqNumStr = br.readLine();
-			
-			seqNum = Integer.parseInt(seqNumStr.substring(seqNumStr
-					.indexOf("=") + 1));
+	private synchronized void initChangeStream() {
+		try (BufferedReader br = new BufferedReader(new InputStreamReader(
+				new BufferedInputStream(new URL(conf.getDiffBaseUrl() + "state.txt").openStream())))) {
+			String seqNumStr = br.lines().filter(x -> x.startsWith("sequenceNumber")).findFirst().get();
+			seqNum = Integer.parseInt(seqNumStr.split("=")[1]);
 			
 			if(seqNum < firstSeq){
 				firstSeq = seqNum;
 			}
 			
-			br.readLine();
-			br.close();
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
 			} catch (Exception e) {
@@ -590,27 +585,30 @@ splitPane.setRightComponent(map);
 			seqNum++;			
 	}
 	
-	public void getData(int seqNum) {		
+	public boolean getData(int seqNum) {		
 		DecimalFormat myFormat = new DecimalFormat("000");
 		String url = conf.getDiffBaseUrl()
 				+ myFormat.format(seqNum / 1000000) + "/"
 				+ myFormat.format((seqNum / 1000) % 1000) + "/"
 				+ myFormat.format(seqNum % 1000) + ".osc.gz";			
-		getData(url);		
+		return getData(url);		
 }
 	
-	public void getData(String url){			
+	public boolean getData(String url){			
 		try {
 			BufferedInputStream bis;
+			System.out.print("Downloading: " + url);
 			bis = new BufferedInputStream(
 					new GZIPInputStream(new URL(url).openStream()));
-			System.out.println("Download: "+url);
-			dc.addData(bis);		
+			System.out.println(" done");
+			dc.addData(bis);
+			return true;
 		} catch (MalformedURLException e) {
-			System.err.println("");
+			System.err.println(e.getMessage());
 		} catch (IOException e) {
-			System.err.println("");
+			System.err.println(e.getMessage());
 		}
+		return false;
 	}
 
 
